@@ -2,17 +2,20 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Pakistan Districts Map</title>
+  <title>Pakistan Tehsils Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Leaflet CSS & JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
-  <!-- Disable favicon 404 -->
+  <!-- Leaflet GeometryUtil for area calculation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-geometryutil/0.9.3/leaflet.geometryutil.min.js"></script>
+
+  <!-- Empty favicon to avoid 404 -->
   <link rel="icon" href="data:,">
 
-  <!-- Your CSS -->
+  <!-- Styles -->
   <style>
     html, body {
         height: 100%;
@@ -34,7 +37,7 @@
     }
 
     #map {
-        flex: 1; /* takes remaining width */
+        flex: 1;
         height: 100%;
     }
 
@@ -54,112 +57,97 @@
   <div id="sidebar"></div>
   <div id="map"></div>
 
-   <!-- Main Application Script -->
   <script>
-    // Initialize map centered on Pakistan
-    var map = L.map('map').setView([30.0, 70.0], 5);
-    
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+    (function(){
+      // Initialize map centered on Pakistan
+      var map = L.map('map').setView([30.0, 70.0], 5);
 
-    // Style for default districts
-    function defaultStyle(feature) {
-        return {
-            fillColor: 'lightblue', // More visible color
-            color: 'black',
-            weight: 1,
-            fillOpacity: 0.6        // Less transparent
-        };
-    }
-
-    // Style for highlighted district
-    function highlightStyle() {
-        return {
-            fillColor: 'orange',
-            color: 'red',
-            weight: 2,
-            fillOpacity: 0.7
-        };
-    }
-
-    // Variable to hold our GeoJSON layer
-    var geojsonLayer;
-
-    // Load GeoJSON data
-    fetch('pakistan_districts.geojson')
-  .then(response => response.json())
-  .then(data => {
-      console.log(data); // works here
-
-      geojsonLayer = L.geoJSON(data, {
-          style: defaultStyle,
-          filter: f => f.geometry.type !== "Point",
-          onEachFeature: function(feature, layer) {
-              if (feature.properties && feature.properties.ADM2_EN) {
-                  layer.bindTooltip(feature.properties.ADM2_EN);
-              }
-          }
+      // Add OpenStreetMap tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
-      // Sidebar
-      let sidebar = document.getElementById('sidebar');
-      data.features.forEach(feature => {
-          let name = feature.properties.ADM2_EN;
-          if (!name) return;
-          let div = document.createElement('div');
-          div.className = 'district-item';
-          div.textContent = name;
-          div.onclick = () => highlightDistrict(name);
-          sidebar.appendChild(div);
-      });
-  });
+      // Styles
+      function defaultStyle(feature) {
+          return { fillColor: 'lightgray', color: 'black', weight: 1, fillOpacity: 0.5 };
+      }
+
+      function highlightStyle() {
+          return { fillColor: 'lightblue', color: 'blue', weight: 2, fillOpacity: 0.7 };
+      }
+
+      var geojsonLayer;
+
+      // Load GeoJSON
+      fetch('pakistan_districts.geojson')
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            console.log("GeoJSON loaded successfully!");
+            console.log("First feature properties:", data.features[0].properties);
+
+            // Create GeoJSON layer with filter to skip Points (cities)
+            geojsonLayer = L.geoJSON(data, {
+                style: defaultStyle,
+                filter: f => f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon",
+                onEachFeature: function(feature, layer) {
+                    if (feature.properties && feature.properties.ADM2_EN) {
+                        layer.bindTooltip(feature.properties.ADM2_EN);
+                    }
+                }
+            }).addTo(map);
+
+            // Zoom to show all districts
+            map.fitBounds(geojsonLayer.getBounds());
+
+            // Build sidebar
+            let sidebar = document.getElementById('sidebar');
+            data.features.forEach(feature => {
+                let name = feature.properties.ADM2_EN; // change if your GeoJSON uses a different property
+                if (!name) return;
+
+                let div = document.createElement('div');
+                div.className = 'district-item';
+                div.textContent = name;
+
+                div.onclick = () => {
+                    geojsonLayer.eachLayer(layer => {
+                        geojsonLayer.resetStyle(layer);
+
+                        if (layer.feature.properties.ADM2_EN === name) {
+                            layer.setStyle(highlightStyle());
+                            map.fitBounds(layer.getBounds());
+
+                            // Calculate area in km²
+                            let latlngs = layer.getLatLngs();
+                            let area = 0;
+                            // MultiPolygon check
+                            if (Array.isArray(latlngs[0][0])) {
+                                latlngs.forEach(poly => poly.forEach(ring => {
+                                    area += L.GeometryUtil.geodesicArea(ring);
+                                }));
+                            } else {
+                                latlngs.forEach(ring => {
+                                    area += L.GeometryUtil.geodesicArea(ring);
+                                });
+                            }
+                            area = area / 1000000; // m² → km²
+                            alert(`District: ${name}\nArea: ${area.toFixed(2)} km²`);
+                        }
+                    });
+                };
+
+                sidebar.appendChild(div);
+            });
 
         })
         .catch(err => {
-            // Show detailed error message
-            console.error("❌ Error loading GeoJSON:", err);
-            document.getElementById('sidebar').innerHTML = `
-                <p style="color: red; font-weight: bold;">
-                    Error: ${err.message}. 
-                    <br>Check the browser's console (F12) for details.
-                    <br>Make sure 'pakistan_districts.geojson' is in the same folder as index.html
-                </p>`;
+            console.error("Error loading GeoJSON:", err);
+            document.getElementById('sidebar').innerHTML = `<p style="color:red;font-weight:bold;">Error: ${err.message}. Check console.</p>`;
         });
-
-    // Function to highlight a selected district
-    function highlightDistrict(districtName) {
-        if (!geojsonLayer) {
-            console.error("GeoJSON layer not loaded yet.");
-            return;
-        }
-        
-        geojsonLayer.eachLayer(layer => {
-            // Reset all districts to default style
-            geojsonLayer.resetStyle(layer);
-
-            // Highlight the clicked district
-            if (layer.feature.properties.ADM2_EN === districtName) {
-                layer.setStyle(highlightStyle());
-                // Zoom to the district bounds
-                map.fitBounds(layer.getBounds());
-                // Open tooltip
-                layer.openTooltip();
-            }
-        });
-    }
+    })();
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
