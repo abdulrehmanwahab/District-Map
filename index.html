@@ -100,7 +100,12 @@
             }).addTo(map);
 
             // Zoom to show all districts
-            map.fitBounds(geojsonLayer.getBounds());
+            let bounds = geojsonLayer.getBounds();
+if (bounds.isValid()) {
+    map.fitBounds(bounds);
+} else {
+    console.warn("GeoJSON layer bounds are not valid.");
+}
 
             // Build sidebar
             let sidebar = document.getElementById('sidebar');
@@ -154,4 +159,5 @@
   </script>
 </body>
 </html>
+
 
