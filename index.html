@@ -43,70 +43,87 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  <script>
+<script>
     // Initialize map
     var map = L.map('map').setView([30.0, 70.0], 5);
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
+        attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     // Style for default districts
     function defaultStyle(feature) {
-      return {
-        fillColor: 'lightgray',
-        color: 'black',
-        weight: 1,
-        fillOpacity: 0.3
-      };
+        return {
+            fillColor: 'lightgray',
+            color: 'black',
+            weight: 1,
+            fillOpacity: 0.3
+        };
     }
 
     // Style for highlighted district
     function highlightStyle() {
-      return {
-        fillColor: 'orange',
-        color: 'red',
-        weight: 2,
-        fillOpacity: 0.7
-      };
+        return {
+            fillColor: 'orange',
+            color: 'red',
+            weight: 2,
+            fillOpacity: 0.7
+        };
     }
 
     var geojsonLayer;
 
     // Load GeoJSON
     fetch('pakistan_districts.geojson')
-      .then(res => res.json())
-      .then(data => {
-        geojsonLayer = L.geoJSON(data, { style: defaultStyle }).addTo(map);
+        .then(response => {
+            // Check if the request was successful
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status} - The file was not found.`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("GeoJSON loaded successfully!", data); // This will log the data to the browser's console
+            geojsonLayer = L.geoJSON(data, { style: defaultStyle }).addTo(map);
 
-        // Build sidebar
-        let sidebar = document.getElementById('sidebar');
-        data.features.forEach(feature => {
-          let name = feature.properties.ADM2_EN; // district name
-          let div = document.createElement('div');
-          div.className = 'district-item';
-          div.textContent = name;
-          div.onclick = () => highlightDistrict(name);
-          sidebar.appendChild(div);
+            // Build sidebar
+            let sidebar = document.getElementById('sidebar');
+            data.features.forEach(feature => {
+                let name = feature.properties.ADM2_EN; // district name
+                let div = document.createElement('div');
+                div.className = 'district-item';
+                div.textContent = name;
+                div.onclick = () => highlightDistrict(name);
+                sidebar.appendChild(div);
+            });
+        })
+        .catch(err => {
+            // This will show a more detailed error in the console
+            console.error("❌ Error loading GeoJSON:", err);
+            // You can also display the error on the webpage itself
+            document.getElementById('sidebar').innerHTML = `<p style="color: red;">Error: ${err.message}. Check the browser's console (F12) for details.</p>`;
         });
-      })
-      .catch(err => console.error("Error loading GeoJSON:", err));
 
     function highlightDistrict(districtName) {
-      geojsonLayer.eachLayer(layer => {
-        // Reset style
-        geojsonLayer.resetStyle(layer);
-
-        // Highlight clicked district
-        if (layer.feature.properties.ADM2_EN === districtName) {
-          layer.setStyle(highlightStyle());
-          // Zoom to district bounds
-          map.fitBounds(layer.getBounds());
+        if (!geojsonLayer) {
+            console.error("GeoJSON layer not loaded yet.");
+            return;
         }
-      });
+        geojsonLayer.eachLayer(layer => {
+            // Reset style
+            geojsonLayer.resetStyle(layer);
+
+            // Highlight clicked district
+            if (layer.feature.properties.ADM2_EN === districtName) {
+                layer.setStyle(highlightStyle());
+                // Zoom to district bounds
+                map.fitBounds(layer.getBounds());
+            }
+        });
     }
-  </script>
+</script>
 </body>
 </html>
+
 
