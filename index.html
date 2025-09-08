@@ -5,13 +5,12 @@
   <title>Pakistan Districts Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <!-- Leaflet CSS -->
+  <!-- Leaflet CSS & JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- Leaflet JS is now loaded ONLY here in the head -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   
   <style>
-    body { margin:0; padding:0; height:100%; font-family: Arial, sans-serif; }
+    body { margin:0; padding:0; height:100vh; font-family: Arial, sans-serif; }
     #map { height: 100%; width: 75%; float: right; }
     #sidebar {
       height: 100%;
@@ -39,9 +38,9 @@
     ✅ Webpage loaded successfully
   </p>
 
-  <!-- YOUR SCRIPT IS HERE - NOTE: THE SECOND LEAFLET SCRIPT TAG IS NOW GONE -->
+  <!-- Main Application Script -->
   <script>
-    // Initialize map
+    // Initialize map centered on Pakistan
     var map = L.map('map').setView([30.0, 70.0], 5);
 
     // Add OpenStreetMap tiles
@@ -49,10 +48,102 @@
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // ... (the rest of your script is fine)
+    // Style for default districts
+    function defaultStyle(feature) {
+        return {
+            fillColor: 'lightblue', // More visible color
+            color: 'black',
+            weight: 1,
+            fillOpacity: 0.6        // Less transparent
+        };
+    }
+
+    // Style for highlighted district
+    function highlightStyle() {
+        return {
+            fillColor: 'orange',
+            color: 'red',
+            weight: 2,
+            fillOpacity: 0.7
+        };
+    }
+
+    // Variable to hold our GeoJSON layer
+    var geojsonLayer;
+
+    // Load GeoJSON data
+    fetch('pakistan_districts.geojson')
+        .then(response => {
+            // Check if the request was successful
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status} - The file was not found.`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("GeoJSON loaded successfully!", data);
+            
+            // Create GeoJSON layer and add to map
+            geojsonLayer = L.geoJSON(data, { 
+                style: defaultStyle,
+                // Add a tooltip on hover
+                onEachFeature: function(feature, layer) {
+                    if (feature.properties && feature.properties.ADM2_EN) {
+                        layer.bindTooltip(feature.properties.ADM2_EN);
+                    }
+                }
+            }).addTo(map);
+
+            // Automatically zoom map to show all districts
+            map.fitBounds(geojsonLayer.getBounds());
+
+            // Build sidebar list of districts
+            let sidebar = document.getElementById('sidebar');
+            data.features.forEach(feature => {
+                let name = feature.properties.ADM2_EN; // district name
+                let div = document.createElement('div');
+                div.className = 'district-item';
+                div.textContent = name;
+                div.onclick = () => highlightDistrict(name);
+                sidebar.appendChild(div);
+            });
+        })
+        .catch(err => {
+            // Show detailed error message
+            console.error("❌ Error loading GeoJSON:", err);
+            document.getElementById('sidebar').innerHTML = `
+                <p style="color: red; font-weight: bold;">
+                    Error: ${err.message}. 
+                    <br>Check the browser's console (F12) for details.
+                    <br>Make sure 'pakistan_districts.geojson' is in the same folder as index.html
+                </p>`;
+        });
+
+    // Function to highlight a selected district
+    function highlightDistrict(districtName) {
+        if (!geojsonLayer) {
+            console.error("GeoJSON layer not loaded yet.");
+            return;
+        }
+        
+        geojsonLayer.eachLayer(layer => {
+            // Reset all districts to default style
+            geojsonLayer.resetStyle(layer);
+
+            // Highlight the clicked district
+            if (layer.feature.properties.ADM2_EN === districtName) {
+                layer.setStyle(highlightStyle());
+                // Zoom to the district bounds
+                map.fitBounds(layer.getBounds());
+                // Open tooltip
+                layer.openTooltip();
+            }
+        });
+    }
   </script>
 </body>
 </html>
+
 
 
 
