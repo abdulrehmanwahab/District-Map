@@ -89,41 +89,33 @@
 
     // Load GeoJSON data
     fetch('pakistan_districts.geojson')
-        .then(response => {
-            // Check if the request was successful
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status} - The file was not found.`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("GeoJSON loaded successfully!", data);
-            console.log("First feature properties:", data.features[0].properties);
-            // Create GeoJSON layer and add to map
-            geojsonLayer = L.geoJSON(data, { 
-                style: defaultStyle,
-                // Add a tooltip on hover
-                onEachFeature: function(feature, layer) {
-                    if (feature.properties && feature.properties.ADM2_EN) {
-                        layer.bindTooltip(feature.properties.ADM2_EN);
-                    }
-                }
-            }).addTo(map);
+  .then(response => response.json())
+  .then(data => {
+      console.log(data); // works here
 
-            // Automatically zoom map to show all districts
-            map.fitBounds(geojsonLayer.getBounds());
+      geojsonLayer = L.geoJSON(data, {
+          style: defaultStyle,
+          filter: f => f.geometry.type !== "Point",
+          onEachFeature: function(feature, layer) {
+              if (feature.properties && feature.properties.ADM2_EN) {
+                  layer.bindTooltip(feature.properties.ADM2_EN);
+              }
+          }
+      }).addTo(map);
 
-            // Build sidebar list of districts
-            let sidebar = document.getElementById('sidebar');
-            data.features.forEach(feature => {
-            let name = feature.properties.ADM2_EN;
-            if (!name) return; // skip empty names
-            let div = document.createElement('div');
-            div.className = 'district-item';
-            div.textContent = name;
-            div.onclick = () => highlightDistrict(name);
-            sidebar.appendChild(div);
-        });
+      // Sidebar
+      let sidebar = document.getElementById('sidebar');
+      data.features.forEach(feature => {
+          let name = feature.properties.ADM2_EN;
+          if (!name) return;
+          let div = document.createElement('div');
+          div.className = 'district-item';
+          div.textContent = name;
+          div.onclick = () => highlightDistrict(name);
+          sidebar.appendChild(div);
+      });
+  });
+
         })
         .catch(err => {
             // Show detailed error message
@@ -160,6 +152,7 @@
   </script>
 </body>
 </html>
+
 
 
 
