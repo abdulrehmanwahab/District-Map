@@ -164,11 +164,10 @@
         geojsonLayer.eachLayer(layer => {
             geojsonLayer.resetStyle(layer);
             if (layer.feature.properties.shapeName === districtName) {
-                layer.setStyle(highlightStyle());
-                map.fitBounds(layer.getBounds());
-                layer.openTooltip();
-                districtFound = true;
-            }
+              layer.setStyle(highlightStyle());
+              layer.openTooltip();
+              districtFound = true;
+              }
         });
         
         if (!districtFound) {
@@ -178,6 +177,7 @@
 </script>
 </body>
 </html>
+
 
 
 
