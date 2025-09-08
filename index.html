@@ -167,8 +167,9 @@
             // Check if already highlighted (orange)
             if (layer.options.fillColor === "orange") {
                 // Unselect: reset style & close tooltip
-                geojsonLayer.resetStyle(layer);
-                layer.closeTooltip();
+              layer.closeTooltip();  
+              geojsonLayer.resetStyle(layer);
+                
             } else {
                 // Select: apply highlight & open tooltip
                 layer.setStyle(highlightStyle());
@@ -185,6 +186,7 @@
 </script>
 </body>
 </html>
+
 
 
 
