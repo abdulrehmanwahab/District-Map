@@ -113,31 +113,34 @@
                 div.textContent = name;
 
                 div.onclick = () => {
-                    geojsonLayer.eachLayer(layer => {
-                        geojsonLayer.resetStyle(layer);
+    geojsonLayer.eachLayer(layer => {
+        geojsonLayer.resetStyle(layer);
 
-                        if (layer.feature.properties.ADM2_EN === name) {
-                            layer.setStyle(highlightStyle());
-                            map.fitBounds(layer.getBounds());
+        if (layer.feature.properties.ADM2_EN === name) {
+            layer.setStyle(highlightStyle());
+            map.fitBounds(layer.getBounds());
 
-                            // Calculate area in km²
-                            let latlngs = layer.getLatLngs();
-                            let area = 0;
-                            // MultiPolygon check
-                            if (Array.isArray(latlngs[0][0])) {
-                                latlngs.forEach(poly => poly.forEach(ring => {
-                                    area += L.GeometryUtil.geodesicArea(ring);
-                                }));
-                            } else {
-                                latlngs.forEach(ring => {
-                                    area += L.GeometryUtil.geodesicArea(ring);
-                                });
-                            }
-                            area = area / 1000000; // m² → km²
-                            alert(`District: ${name}\nArea: ${area.toFixed(2)} km²`);
-                        }
+            // Calculate area in km²
+            let latlngs = layer.getLatLngs();
+            let area = 0;
+
+            if (layer.feature.geometry.type === "MultiPolygon") {
+                latlngs.forEach(polygon => {
+                    polygon.forEach(ring => {
+                        area += L.GeometryUtil.geodesicArea(ring);
                     });
-                };
+                });
+            } else { // Polygon
+                latlngs.forEach(ring => {
+                    area += L.GeometryUtil.geodesicArea(ring);
+                });
+            }
+
+            area = area / 1000000; // m² → km²
+            alert(`District: ${name}\nArea: ${area.toFixed(2)} km²`);
+        }
+    });
+};
 
                 sidebar.appendChild(div);
             });
@@ -151,3 +154,4 @@
   </script>
 </body>
 </html>
+
