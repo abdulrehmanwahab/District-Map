@@ -58,24 +58,7 @@
   <div id="map"></div>
 
  <script>
-   // 🔍 Debug snippet
-    fetch('geoBoundaries-PAK-ADM3.geojson')
-      .then(response => response.json())
-      .then(data => {
-          if (data.features && data.features.length > 0) {
-              console.log("Available property keys in first feature:");
-              console.log(Object.keys(data.features[0].properties));
-              console.log("Full properties object:");
-              console.log(data.features[0].properties);
-          } else {
-              console.error("No features found in GeoJSON file.");
-          }
-      })
-      .catch(err => console.error("Error loading GeoJSON:", err)); 
-   
-   
-   
-   // Initialize map centered on Pakistan
+    // Initialize map centered on Pakistan
     var map = L.map('map').setView([30.0, 70.0], 5);
 
     // Add OpenStreetMap tiles
@@ -120,13 +103,13 @@
             geojsonLayer = L.geoJSON(data, {
                 style: defaultStyle,
                 onEachFeature: function(feature, layer) {
-                    if (feature.properties && feature.properties.ADM2_EN) {
-                        layer.bindTooltip(feature.properties.ADM2_EN);
+                    if (feature.properties && feature.properties.shapeName) {
+                        layer.bindTooltip(feature.properties.shapeName);
                     }
                 }
             }).addTo(map);
 
-            // --- CRITICAL FIX: Check if the layer has valid bounds BEFORE zooming ---
+            // --- Fit map to data bounds ---
             try {
                 const bounds = geojsonLayer.getBounds();
                 if (bounds.isValid()) {
@@ -134,35 +117,31 @@
                     console.log("Map zoomed to data bounds successfully.");
                 } else {
                     console.warn("Loaded GeoJSON data has invalid bounds. Keeping default view.");
-                    // You can keep the default view or set a more specific one
                     map.setView([30.0, 70.0], 5);
                 }
             } catch (error) {
                 console.error("Error calculating bounds:", error);
-                map.setView([30.0, 70.0], 5); // Fallback to default view
+                map.setView([30.0, 70.0], 5); // Fallback
             }
-            // -----------------------------------------------------------------------
 
-            // Build sidebar list of districts
+            // Build sidebar list of tehsils
             let sidebar = document.getElementById('sidebar');
-            // Check if features exist and have properties
             if (data.features && data.features.length > 0) {
                 data.features.forEach(feature => {
-                    // Check if the feature has a valid name property
-                    if (feature.properties && feature.properties.ADM2_EN) {
-                        let name = feature.properties.ADM2_EN;
+                    if (feature.properties && feature.properties.shapeName) {
+                        let name = feature.properties.shapeName;
                         let div = document.createElement('div');
                         div.className = 'district-item';
                         div.textContent = name;
                         div.onclick = () => highlightDistrict(name);
                         sidebar.appendChild(div);
                     } else {
-                        console.warn("Feature missing ADM2_EN property:", feature);
+                        console.warn("Feature missing shapeName property:", feature);
                     }
                 });
             } else {
                 console.error("GeoJSON data contains no features.");
-                sidebar.innerHTML = '<p style="color: red;">Error: Loaded data contains no districts.</p>';
+                sidebar.innerHTML = '<p style="color: red;">Error: Loaded data contains no tehsils.</p>';
             }
 
         })
@@ -184,7 +163,7 @@
         let districtFound = false;
         geojsonLayer.eachLayer(layer => {
             geojsonLayer.resetStyle(layer);
-            if (layer.feature.properties.ADM2_EN === districtName) {
+            if (layer.feature.properties.shapeName === districtName) {
                 layer.setStyle(highlightStyle());
                 map.fitBounds(layer.getBounds());
                 layer.openTooltip();
@@ -193,12 +172,14 @@
         });
         
         if (!districtFound) {
-            console.warn(`District named "${districtName}" not found in the data.`);
+            console.warn(`District/Tehsil named "${districtName}" not found in the data.`);
         }
     }
 </script>
 </body>
 </html>
+
+
 
 
 
