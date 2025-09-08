@@ -58,7 +58,7 @@
   <script>
     // Initialize map centered on Pakistan
     var map = L.map('map').setView([30.0, 70.0], 5);
-
+    console.log(data.features[0].properties);
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
@@ -116,13 +116,14 @@
             // Build sidebar list of districts
             let sidebar = document.getElementById('sidebar');
             data.features.forEach(feature => {
-                let name = feature.properties.ADM2_EN; // district name
-                let div = document.createElement('div');
-                div.className = 'district-item';
-                div.textContent = name;
-                div.onclick = () => highlightDistrict(name);
-                sidebar.appendChild(div);
-            });
+            let name = feature.properties.ADM2_EN;
+            if (!name) return; // skip empty names
+            let div = document.createElement('div');
+            div.className = 'district-item';
+            div.textContent = name;
+            div.onclick = () => highlightDistrict(name);
+            sidebar.appendChild(div);
+        });
         })
         .catch(err => {
             // Show detailed error message
@@ -159,6 +160,7 @@
   </script>
 </body>
 </html>
+
 
 
 
