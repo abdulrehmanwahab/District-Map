@@ -155,28 +155,37 @@
         });
 
     function highlightDistrict(districtName) {
-        if (!geojsonLayer) {
-            console.error("GeoJSON layer not loaded yet.");
-            return;
-        }
-        
-        let districtFound = false;
-        geojsonLayer.eachLayer(layer => {
-            geojsonLayer.resetStyle(layer);
-            if (layer.feature.properties.shapeName === districtName) {
-              layer.setStyle(highlightStyle());
-              layer.openTooltip();
-              districtFound = true;
-              }
-        });
-        
-        if (!districtFound) {
-            console.warn(`District/Tehsil named "${districtName}" not found in the data.`);
-        }
+    if (!geojsonLayer) {
+        console.error("GeoJSON layer not loaded yet.");
+        return;
     }
+
+    let districtFound = false;
+
+    geojsonLayer.eachLayer(layer => {
+        if (layer.feature.properties.shapeName === districtName) {
+            // Check if already highlighted (orange)
+            if (layer.options.fillColor === "orange") {
+                // Unselect: reset style & close tooltip
+                geojsonLayer.resetStyle(layer);
+                layer.closeTooltip();
+            } else {
+                // Select: apply highlight & open tooltip
+                layer.setStyle(highlightStyle());
+                layer.openTooltip();
+            }
+            districtFound = true;
+        }
+    });
+
+    if (!districtFound) {
+        console.warn(`District/Tehsil named "${districtName}" not found in the data.`);
+    }
+}
 </script>
 </body>
 </html>
+
 
 
 
