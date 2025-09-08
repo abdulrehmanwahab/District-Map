@@ -57,41 +57,51 @@
   <div id="sidebar"></div>
   <div id="map"></div>
 
-  <script>
-    (function(){
-      // Initialize map centered on Pakistan
-      var map = L.map('map').setView([30.0, 70.0], 5);
+ <script>
+    // Initialize map centered on Pakistan
+    var map = L.map('map').setView([30.0, 70.0], 5);
 
-      // Add OpenStreetMap tiles
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-      // Styles
-      function defaultStyle(feature) {
-          return { fillColor: 'lightgray', color: 'black', weight: 1, fillOpacity: 0.5 };
-      }
+    // Style for default districts
+    function defaultStyle(feature) {
+        return {
+            fillColor: 'lightblue',
+            color: 'black',
+            weight: 1,
+            fillOpacity: 0.6
+        };
+    }
 
-      function highlightStyle() {
-          return { fillColor: 'lightblue', color: 'blue', weight: 2, fillOpacity: 0.7 };
-      }
+    // Style for highlighted district
+    function highlightStyle() {
+        return {
+            fillColor: 'orange',
+            color: 'red',
+            weight: 2,
+            fillOpacity: 0.7
+        };
+    }
 
-      var geojsonLayer;
+    var geojsonLayer;
 
-      // Load GeoJSON
-      fetch('pakistan_districts.geojson')
+    // Load GeoJSON data
+    fetch('pakistan_districts.geojson')
         .then(response => {
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status} - The file was not found.`);
+            }
             return response.json();
         })
         .then(data => {
-            console.log("GeoJSON loaded successfully!");
-            console.log("First feature properties:", data.features[0].properties);
+            console.log("GeoJSON loaded successfully!", data);
 
-            // Create GeoJSON layer with filter to skip Points (cities)
+            // Create GeoJSON layer
             geojsonLayer = L.geoJSON(data, {
                 style: defaultStyle,
-                filter: f => f.geometry.type === "Polygon" || f.geometry.type === "MultiPolygon",
                 onEachFeature: function(feature, layer) {
                     if (feature.properties && feature.properties.ADM2_EN) {
                         layer.bindTooltip(feature.properties.ADM2_EN);
@@ -99,65 +109,79 @@
                 }
             }).addTo(map);
 
-            // Zoom to show all districts
-            let bounds = geojsonLayer.getBounds();
-if (bounds.isValid()) {
-    map.fitBounds(bounds);
-} else {
-    console.warn("GeoJSON layer bounds are not valid.");
-}
-
-            // Build sidebar
-            let sidebar = document.getElementById('sidebar');
-            data.features.forEach(feature => {
-                let name = feature.properties.ADM2_EN; // change if your GeoJSON uses a different property
-                if (!name) return;
-
-                let div = document.createElement('div');
-                div.className = 'district-item';
-                div.textContent = name;
-
-                div.onclick = () => {
-    geojsonLayer.eachLayer(layer => {
-        geojsonLayer.resetStyle(layer);
-
-        if (layer.feature.properties.ADM2_EN === name) {
-            layer.setStyle(highlightStyle());
-            map.fitBounds(layer.getBounds());
-
-            // Calculate area in km²
-            let latlngs = layer.getLatLngs();
-            let area = 0;
-
-            if (layer.feature.geometry.type === "MultiPolygon") {
-                latlngs.forEach(polygon => {
-                    polygon.forEach(ring => {
-                        area += L.GeometryUtil.geodesicArea(ring);
-                    });
-                });
-            } else { // Polygon
-                latlngs.forEach(ring => {
-                    area += L.GeometryUtil.geodesicArea(ring);
-                });
+            // --- CRITICAL FIX: Check if the layer has valid bounds BEFORE zooming ---
+            try {
+                const bounds = geojsonLayer.getBounds();
+                if (bounds.isValid()) {
+                    map.fitBounds(bounds);
+                    console.log("Map zoomed to data bounds successfully.");
+                } else {
+                    console.warn("Loaded GeoJSON data has invalid bounds. Keeping default view.");
+                    // You can keep the default view or set a more specific one
+                    map.setView([30.0, 70.0], 5);
+                }
+            } catch (error) {
+                console.error("Error calculating bounds:", error);
+                map.setView([30.0, 70.0], 5); // Fallback to default view
             }
+            // -----------------------------------------------------------------------
 
-            area = area / 1000000; // m² → km²
-            alert(`District: ${name}\nArea: ${area.toFixed(2)} km²`);
-        }
-    });
-};
-
-                sidebar.appendChild(div);
-            });
+            // Build sidebar list of districts
+            let sidebar = document.getElementById('sidebar');
+            // Check if features exist and have properties
+            if (data.features && data.features.length > 0) {
+                data.features.forEach(feature => {
+                    // Check if the feature has a valid name property
+                    if (feature.properties && feature.properties.ADM2_EN) {
+                        let name = feature.properties.ADM2_EN;
+                        let div = document.createElement('div');
+                        div.className = 'district-item';
+                        div.textContent = name;
+                        div.onclick = () => highlightDistrict(name);
+                        sidebar.appendChild(div);
+                    } else {
+                        console.warn("Feature missing ADM2_EN property:", feature);
+                    }
+                });
+            } else {
+                console.error("GeoJSON data contains no features.");
+                sidebar.innerHTML = '<p style="color: red;">Error: Loaded data contains no districts.</p>';
+            }
 
         })
         .catch(err => {
-            console.error("Error loading GeoJSON:", err);
-            document.getElementById('sidebar').innerHTML = `<p style="color:red;font-weight:bold;">Error: ${err.message}. Check console.</p>`;
+            console.error("❌ Error loading GeoJSON:", err);
+            document.getElementById('sidebar').innerHTML = `
+                <p style="color: red; font-weight: bold;">
+                    Error: ${err.message}.
+                    <br>Check the browser's console (F12) for details.
+                </p>`;
         });
-    })();
-  </script>
+
+    function highlightDistrict(districtName) {
+        if (!geojsonLayer) {
+            console.error("GeoJSON layer not loaded yet.");
+            return;
+        }
+        
+        let districtFound = false;
+        geojsonLayer.eachLayer(layer => {
+            geojsonLayer.resetStyle(layer);
+            if (layer.feature.properties.ADM2_EN === districtName) {
+                layer.setStyle(highlightStyle());
+                map.fitBounds(layer.getBounds());
+                layer.openTooltip();
+                districtFound = true;
+            }
+        });
+        
+        if (!districtFound) {
+            console.warn(`District named "${districtName}" not found in the data.`);
+        }
+    }
+</script>
 </body>
 </html>
+
 
 
