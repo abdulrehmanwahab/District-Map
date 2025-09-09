@@ -15,15 +15,9 @@
   <link rel="icon" href="data:,">
 
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      display: flex;
-      font-family: Arial, sans-serif;
-    }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body { display: flex; font-family: Arial, sans-serif; }
+
     #sidebar {
       width: 25%;
       background: #f8f9fa;
@@ -31,15 +25,11 @@
       padding: 10px;
       border-right: 1px solid #ccc;
     }
-    #map {
-      flex: 1;
-      height: 100%;
-    }
-    h3 {
-      margin: 10px 0 5px 0;
-      font-size: 16px;
-      color: #222;
-    }
+
+    #map { flex: 1; height: 100%; }
+
+    h3 { margin: 10px 0 5px 0; font-size: 16px; color: #222; cursor: pointer; }
+
     .district-item {
       cursor: pointer;
       padding: 5px;
@@ -47,9 +37,8 @@
       border-radius: 5px;
       padding-left: 15px;
     }
-    .district-item:hover {
-      background-color: #e0e0e0;
-    }
+
+    .district-item:hover { background-color: #e0e0e0; }
   </style>
 </head>
 <body>
@@ -57,93 +46,36 @@
   <div id="map"></div>
 
   <script>
-    // Initialize map
     var map = L.map('map').setView([30.0, 70.0], 5);
-
-    // Add base map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     var geojsonLayer;
 
-    // --- Load Tehsils (ADM3) only ---
+    // --- Load Tehsils (ADM3) ---
     fetch('geoBoundaries-PAK-ADM3.geojson')
       .then(r => r.json())
       .then(data => {
-        console.log("Tehsil data loaded", data);
 
-        // Draw tehsils with thin borders
+        // Draw tehsils
         geojsonLayer = L.geoJSON(data, {
-          style: {
-            fillColor: 'lightblue',
-            color: 'gray',
-            weight: 1,
-            fillOpacity: 0.6
-          },
-          onEachFeature: function (feature, layer) {
+          style: { fillColor: 'lightblue', color: 'gray', weight: 1, fillOpacity: 0.6 },
+          onEachFeature: function(feature, layer) {
             if (feature.properties && feature.properties.shapeName) {
               layer.bindTooltip(feature.properties.shapeName);
             }
+            layer.on('click', function() { toggleHighlight(layer); });
           }
         }).addTo(map);
 
-        // Fit to bounds
         map.fitBounds(geojsonLayer.getBounds());
 
-        // Build sidebar grouped by province
         buildSidebar(data);
-
-        // Build province outlines (merge tehsils by shapeGroup)
-        //drawProvinceOutlines(data);
-
-       // ----------- EXTERNAL TOOLTIP CODE START -----------
-      // Create container for external tooltips
-      let tooltipContainer = document.createElement('div');
-      tooltipContainer.style.position = 'absolute';
-      tooltipContainer.style.top = '10px';
-      tooltipContainer.style.right = '10px';
-      tooltipContainer.style.width = '200px';
-      tooltipContainer.style.background = 'white';
-      tooltipContainer.style.padding = '5px';
-      tooltipContainer.style.border = '1px solid #ccc';
-      tooltipContainer.style.fontSize = '14px';
-      tooltipContainer.style.pointerEvents = 'none';
-      tooltipContainer.style.zIndex = 1000;
-      document.body.appendChild(tooltipContainer);
-
-      function showExternalTooltip(feature) {
-          tooltipContainer.innerHTML = feature.properties.shapeName;
-          let centroid = turf.centroid(feature).geometry.coordinates; // [lng, lat]
-          let latlngs = [
-              [centroid[1], centroid[0]], // point on map
-              map.containerPointToLatLng([map.getSize().x - 150, 30]) // label position
-          ];
-          if (window.connectorLine) map.removeLayer(window.connectorLine);
-          window.connectorLine = L.polyline(latlngs, {color: 'black', weight: 1, dashArray: '4'}).addTo(map);
-      }
-
-      function hideExternalTooltip() {
-          tooltipContainer.innerHTML = '';
-          if (window.connectorLine) map.removeLayer(window.connectorLine);
-          window.connectorLine = null;
-      }
-
-      // Add events to tehsils
-      geojsonLayer.eachLayer(layer => {
-          layer.on('mouseover', function(e) {
-              showExternalTooltip(layer.feature);
-          });
-          layer.on('mouseout', function(e) {
-              hideExternalTooltip();
-          });
-      });
-      // ----------- EXTERNAL TOOLTIP CODE END -----------
-
-        
+        drawProvinceOutlines(data);
       });
 
-    // --- Build Sidebar grouped by province ---
+    // --- Sidebar ---
     function buildSidebar(data) {
       let sidebar = document.getElementById('sidebar');
       let groups = {};
@@ -156,26 +88,49 @@
         }
       });
 
-      // Sort provinces alphabetically
-      let sortedGroups = Object.keys(groups).sort();
-
-      sortedGroups.forEach(group => {
-        // Province heading
+      Object.keys(groups).sort().forEach(group => {
         let heading = document.createElement('h3');
         heading.textContent = group;
+        heading.onclick = () => highlightProvince(group, groups[group]);
         sidebar.appendChild(heading);
 
-        // Sort tehsils alphabetically
-        groups[group].sort((a, b) =>
-          a.properties.shapeName.localeCompare(b.properties.shapeName)
-        );
+        groups[group].sort((a,b) => a.properties.shapeName.localeCompare(b.properties.shapeName))
+          .forEach(f => {
+            let div = document.createElement('div');
+            div.className = 'district-item';
+            div.textContent = f.properties.shapeName;
+            div.onclick = () => highlightDistrict(f.properties.shapeName);
+            sidebar.appendChild(div);
+          });
+      });
+    }
 
-        groups[group].forEach(f => {
-          let div = document.createElement('div');
-          div.className = 'district-item';
-          div.textContent = f.properties.shapeName;
-          div.onclick = () => highlightDistrict(f.properties.shapeName);
-          sidebar.appendChild(div);
+    // --- Highlight district ---
+    function highlightDistrict(name) {
+      geojsonLayer.eachLayer(layer => {
+        if (layer.feature.properties.shapeName === name) {
+          toggleHighlight(layer);
+        }
+      });
+    }
+
+    function toggleHighlight(layer) {
+      if (layer.options.fillColor === "orange") {
+        geojsonLayer.resetStyle(layer);
+        layer.closeTooltip();
+      } else {
+        layer.setStyle({ fillColor: 'orange', color: 'red', weight: 2, fillOpacity: 0.7 });
+        layer.openTooltip();
+      }
+    }
+
+    // --- Highlight all tehsils in a province ---
+    function highlightProvince(group, features) {
+      features.forEach(f => {
+        geojsonLayer.eachLayer(layer => {
+          if (layer.feature.properties.shapeName === f.properties.shapeName) {
+            toggleHighlight(layer);
+          }
         });
       });
     }
@@ -184,7 +139,6 @@
     function drawProvinceOutlines(data) {
       let groups = {};
 
-      // Group tehsils by province
       data.features.forEach(f => {
         if (f.properties && f.properties.shapeGroup) {
           let group = f.properties.shapeGroup;
@@ -195,49 +149,18 @@
 
       Object.keys(groups).forEach(group => {
         let features = groups[group];
-
-        // Merge all tehsils in this province into one polygon
         let merged = features[0];
+
         for (let i = 1; i < features.length; i++) {
-          try {
-            merged = turf.union(merged, features[i]);
-          } catch (e) {
-            console.warn("Union failed for", group, e);
-          }
+          try { merged = turf.union(merged, features[i]); }
+          catch(e) { console.warn("Union failed for", group, e); }
         }
 
         if (merged) {
-          L.geoJSON(merged, {
-            style: {
-              color: "black",
-              weight: 3,
-              fillOpacity: 0
-            }
-          }).addTo(map);
-        }
-      });
-    }
-
-    // --- Highlight function ---
-    function highlightDistrict(name) {
-      geojsonLayer.eachLayer(layer => {
-        if (layer.feature.properties.shapeName === name) {
-          if (layer.options.fillColor === "orange") {
-            geojsonLayer.resetStyle(layer);
-            layer.closeTooltip();
-          } else {
-            layer.setStyle({
-              fillColor: 'orange',
-              color: 'red',
-              weight: 2,
-              fillOpacity: 0.7
-            });
-            layer.openTooltip();
-          }
+          L.geoJSON(merged, { style: { color: "black", weight: 3, fillOpacity: 0 } }).addTo(map);
         }
       });
     }
   </script>
 </body>
-</html> 
-
+</html>
