@@ -84,27 +84,28 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
   geojsonLayer = L.geoJSON(data, {
     style: { fillColor: 'lightblue', color: 'gray', weight: 1, fillOpacity: 0.6 },
     onEachFeature: function(feature, layer) {
-        if(feature.properties && feature.properties.shapeName){
-            // Bind tooltip
-            layer.bindTooltip(feature.properties.shapeName, {permanent:false});
+    if(feature.properties && feature.properties.shapeName){
+        // Bind tooltip (always bound, but visibility controlled)
+        layer.bindTooltip(feature.properties.shapeName, {permanent: false});
 
-            // Hover events
-            layer.on('mouseover', function(){
-                if(calloutEnabled) showInfo(feature.properties.shapeName);
-                if(tooltipEnabled) layer.openTooltip();
-            });
-            layer.on('mouseout', function(){
-                if(calloutEnabled) clearInfo();
-                if(tooltipEnabled) layer.closeTooltip();
-            });
+        // Hover events
+        layer.on('mouseover', function(){
+            if(calloutEnabled) showInfo(feature.properties.shapeName); // info box
+            if(tooltipEnabled) layer.openTooltip();                     // hover tooltip
+        });
+        layer.on('mouseout', function(){
+            if(calloutEnabled) clearInfo();                             // clear info box
+            if(tooltipEnabled) layer.closeTooltip();                    // hide tooltip
+        });
 
-            // Click highlight
-            layer.on('click', function(){
-                toggleHighlight(layer);
-                if(calloutEnabled) showInfo(feature.properties.shapeName);
-            });
-        }
+        // Click highlight
+        layer.on('click', function(){
+            toggleHighlight(layer);
+            if(calloutEnabled) showInfo(feature.properties.shapeName);
+        });
     }
+}
+
   }).addTo(map);
 
   map.fitBounds(geojsonLayer.getBounds());
@@ -162,3 +163,4 @@ function clearInfo(){ document.getElementById('info-box').innerHTML = "Hover ove
 </script>
 </body>
 </html>
+
