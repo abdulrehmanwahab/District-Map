@@ -93,8 +93,7 @@ document.getElementById('toggle-tooltip').addEventListener('change', function() 
   tooltipEnabled = this.checked;
   console.log("Tooltip Chekced", tooltipEnabled); // debug log
   if (!tooltipEnabled) {
-    console.log("❌ Tooltip disabled, closing all tooltips");
-    allLayers.forEach(layer => { if (layer.closeTooltip) layer.closeTooltip(); });
+        allLayers.forEach(layer => { if (layer.closeTooltip) layer.closeTooltip(); });
   }
 });
 
@@ -169,11 +168,23 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
       if (feature.properties && feature.properties.shapeName) {
         layer.bindTooltip(feature.properties.shapeName, {permanent: false});
 
-        layer.on('mouseover', function() {
-          console.log("Mouseover:", feature.properties.shapeName, "tooltipEnabled =", tooltipEnabled);
-          if (calloutEnabled) showInfo(feature.properties.shapeName);
-          if (tooltipEnabled) layer.openTooltip();
-        });
+       layer.on('mouseover', function() {
+        console.log(
+          "Mouseover:", feature.properties.shapeName, 
+          "tooltipEnabled =", tooltipEnabled,
+          "hasTooltip =", !!layer.getTooltip()
+        );
+         if (calloutEnabled) {
+          showInfo(feature.properties.shapeName);
+          }
+        if (tooltipEnabled) {
+          console.log("➡️ Opening tooltip for", feature.properties.shapeName);
+          layer.openTooltip();
+        } else {
+          console.log("❌ Tooltip disabled, should NOT open");
+        }
+      });
+
         layer.on('mouseout', function() {
           console.log("Mouseover:", feature.properties.shapeName, "tooltipEnabled =", tooltipEnabled);
           if (calloutEnabled) clearInfo();
@@ -227,4 +238,5 @@ function highlightDistrict(name) {
 </script>
 </body>
 </html>
+
 
