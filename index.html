@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+llow<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8" />
@@ -36,11 +36,11 @@ button { display:block; margin-top: 5px; }
     </div>
     <div class="toggle-container">
         <label for="color-picker">Select Dist Highlight Color:</label><br>
-        <input type="color" id="color-picker" value="#ffa500" style="width:50%; margin-top:5px;">
+        <input type="color" id="color-picker" value="#ffa500" style="width:55%; margin-top:5px;">
     </div>
     <div class="toggle-container">
         <label for="color-picker-map-bgrd">Select Map Background Color:</label><br>
-        <input type="color" id="color-picker-map-bgrd" value="#ffa500" style="width:50%; margin-top:5px;">
+        <input type="color" id="color-picker-map-bgrd" value='gray' style="width:55%; margin-top:5px;">
     </div>        
     <div class="toggle-container">
         <button id="btn1" style="width:40%;">Cotton</button>
@@ -91,7 +91,7 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
 .then(r => r.json())
 .then(data => {
   geojsonLayer = L.geoJSON(data, {
-    style: { fillColor: 'lightblue', color: 'gray', weight: 1, fillOpacity: 0.6 },
+    style: { fillColor: 'red', color: 'yellow', weight: 1, fillOpacity: 0.6 },
     onEachFeature: function(feature, layer) {
     if(feature.properties && feature.properties.shapeName){
         // Bind tooltip (always bound, but visibility controlled)
@@ -172,5 +172,6 @@ function clearInfo(){ document.getElementById('info-box').innerHTML = "Hover ove
 </script>
 </body>
 </html>
+
 
 
