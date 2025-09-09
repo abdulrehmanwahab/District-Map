@@ -9,54 +9,46 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
-  <!-- Leaflet GeometryUtil for area calculation -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-geometryutil/0.9.3/leaflet.geometryutil.min.js"></script>
+  <!-- Turf.js for polygon merging -->
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
-  <!-- Empty favicon to avoid 404 -->
   <link rel="icon" href="data:,">
 
-  <!-- Styles -->
   <style>
     html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
+      height: 100%;
+      margin: 0;
+      padding: 0;
     }
-
     body {
-        display: flex;
-        font-family: Arial, sans-serif;
+      display: flex;
+      font-family: Arial, sans-serif;
     }
-
     #sidebar {
-        width: 25%;
-        background: #f8f9fa;
-        overflow-y: auto;
-        padding: 10px;
-        border-right: 1px solid #ccc;
+      width: 25%;
+      background: #f8f9fa;
+      overflow-y: auto;
+      padding: 10px;
+      border-right: 1px solid #ccc;
     }
-
     #map {
-        flex: 1;
-        height: 100%;
+      flex: 1;
+      height: 100%;
     }
-
     h3 {
-        margin: 10px 0 5px 0;
-        font-size: 16px;
-        color: #222;
+      margin: 10px 0 5px 0;
+      font-size: 16px;
+      color: #222;
     }
-
     .district-item {
-        cursor: pointer;
-        padding: 5px;
-        margin: 2px 0;
-        border-radius: 5px;
-        padding-left: 15px;
+      cursor: pointer;
+      padding: 5px;
+      margin: 2px 0;
+      border-radius: 5px;
+      padding-left: 15px;
     }
-
     .district-item:hover {
-        background-color: #e0e0e0;
+      background-color: #e0e0e0;
     }
   </style>
 </head>
@@ -64,127 +56,142 @@
   <div id="sidebar"></div>
   <div id="map"></div>
 
- <script>
-    // Initialize map centered on Pakistan
+  <script>
+    // Initialize map
     var map = L.map('map').setView([30.0, 70.0], 5);
 
-    // Add OpenStreetMap tiles
+    // Add base map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+      attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Style for default districts
-    function defaultStyle(feature) {
-        return {
+    var geojsonLayer;
+
+    // --- Load Tehsils (ADM3) only ---
+    fetch('geoBoundaries-PAK-ADM3.geojson')
+      .then(r => r.json())
+      .then(data => {
+        console.log("Tehsil data loaded", data);
+
+        // Draw tehsils with thin borders
+        geojsonLayer = L.geoJSON(data, {
+          style: {
             fillColor: 'lightblue',
             color: 'gray',
             weight: 1,
             fillOpacity: 0.6
-        };
+          },
+          onEachFeature: function (feature, layer) {
+            if (feature.properties && feature.properties.shapeName) {
+              layer.bindTooltip(feature.properties.shapeName);
+            }
+          }
+        }).addTo(map);
+
+        // Fit to bounds
+        map.fitBounds(geojsonLayer.getBounds());
+
+        // Build sidebar grouped by province
+        buildSidebar(data);
+
+        // Build province outlines (merge tehsils by shapeGroup)
+        drawProvinceOutlines(data);
+      });
+
+    // --- Build Sidebar grouped by province ---
+    function buildSidebar(data) {
+      let sidebar = document.getElementById('sidebar');
+      let groups = {};
+
+      data.features.forEach(f => {
+        if (f.properties && f.properties.shapeGroup && f.properties.shapeName) {
+          let group = f.properties.shapeGroup;
+          if (!groups[group]) groups[group] = [];
+          groups[group].push(f);
+        }
+      });
+
+      // Sort provinces alphabetically
+      let sortedGroups = Object.keys(groups).sort();
+
+      sortedGroups.forEach(group => {
+        // Province heading
+        let heading = document.createElement('h3');
+        heading.textContent = group;
+        sidebar.appendChild(heading);
+
+        // Sort tehsils alphabetically
+        groups[group].sort((a, b) =>
+          a.properties.shapeName.localeCompare(b.properties.shapeName)
+        );
+
+        groups[group].forEach(f => {
+          let div = document.createElement('div');
+          div.className = 'district-item';
+          div.textContent = f.properties.shapeName;
+          div.onclick = () => highlightDistrict(f.properties.shapeName);
+          sidebar.appendChild(div);
+        });
+      });
     }
 
-    // Style for highlighted district
-    function highlightStyle() {
-        return {
-            fillColor: 'orange',
-            color: 'red',
-            weight: 2,
-            fillOpacity: 0.7
-        };
+    // --- Draw merged province outlines ---
+    function drawProvinceOutlines(data) {
+      let groups = {};
+
+      // Group tehsils by province
+      data.features.forEach(f => {
+        if (f.properties && f.properties.shapeGroup) {
+          let group = f.properties.shapeGroup;
+          if (!groups[group]) groups[group] = [];
+          groups[group].push(f);
+        }
+      });
+
+      Object.keys(groups).forEach(group => {
+        let features = groups[group];
+
+        // Merge all tehsils in this province into one polygon
+        let merged = features[0];
+        for (let i = 1; i < features.length; i++) {
+          try {
+            merged = turf.union(merged, features[i]);
+          } catch (e) {
+            console.warn("Union failed for", group, e);
+          }
+        }
+
+        if (merged) {
+          L.geoJSON(merged, {
+            style: {
+              color: "black",
+              weight: 3,
+              fillOpacity: 0
+            }
+          }).addTo(map);
+        }
+      });
     }
 
-    var geojsonLayer;
-
-    // --- Load Province Outlines (ADM1) ---
-fetch('geoBoundaries-PAK-ADM1_simplified.geojson')
-  .then(response => {
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      return response.json();
-  })
-  .then(provinceData => {
-      L.geoJSON(provinceData, {
-          style: function(feature) {
-              return {
-                  fillOpacity: 0,       // transparent inside
-                  color: "black",       // province border color
-                  weight: 3             // thick
-              };
-          },
-          onEachFeature: function(feature, layer) {
-              if (feature.properties && feature.properties.shapeName) {
-                  layer.bindTooltip(feature.properties.shapeName, {permanent: true, direction: "center"});
-              }
-          }
-      }).bringToFront().addTo(map);  // ensure provinces are drawn above tehsils
-  })
-  .catch(err => console.error("❌ Error loading provinces:", err));
-
-
-// --- Load Tehsils (ADM3) ---
-fetch('geoBoundaries-PAK-ADM3.geojson')
-  .then(response => {
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      return response.json();
-  })
-  .then(data => {
-      console.log("Tehsil GeoJSON loaded successfully!", data);
-
-      // Create Tehsil layer
-      geojsonLayer = L.geoJSON(data, {
-          style: function(feature) {
-              return {
-                  fillColor: 'lightblue',
-                  color: 'gray',     // thin borders for tehsils
-                  weight: 1,         // thinner than provinces
-                  fillOpacity: 0.6
-              };
-          },
-          onEachFeature: function(feature, layer) {
-              if (feature.properties && feature.properties.shapeName) {
-                  layer.bindTooltip(feature.properties.shapeName);
-              }
-          }
-      }).addTo(map);
-
-      // Fit map to tehsil bounds
-      try {
-          const bounds = geojsonLayer.getBounds();
-          if (bounds.isValid()) {
-              map.fitBounds(bounds);
+    // --- Highlight function ---
+    function highlightDistrict(name) {
+      geojsonLayer.eachLayer(layer => {
+        if (layer.feature.properties.shapeName === name) {
+          if (layer.options.fillColor === "orange") {
+            geojsonLayer.resetStyle(layer);
+            layer.closeTooltip();
           } else {
-              map.setView([30.0, 70.0], 5);
+            layer.setStyle({
+              fillColor: 'orange',
+              color: 'red',
+              weight: 2,
+              fillOpacity: 0.7
+            });
+            layer.openTooltip();
           }
-      } catch (error) {
-          console.error("Error calculating bounds:", error);
-          map.setView([30.0, 70.0], 5);
-      }
-
-      // Build sidebar
-      buildSidebar(data);
-  })
-  .catch(err => console.error("❌ Error loading tehsils:", err));
+        }
+      });
     }
- </script>
+  </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
