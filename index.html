@@ -62,15 +62,16 @@ button { display:block; margin-top: 5px; }
 var calloutEnabled = true;
 var tooltipEnabled = false;
 var highlightColor = "#ffa500";
-
+var mapLineColor = "#808080"; 
+var mapColor = "#ADD8E6";  
+            
 var map = L.map('map').setView([30.0, 70.0], 5);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
 var geojsonLayer;
-var mapLineColor = "#000000"; 
-var mapColor = "#000000";             
+           
 
 // Checkbox toggles
 document.getElementById('toggle-callout').addEventListener('change', function() {
@@ -185,6 +186,7 @@ function clearInfo(){ document.getElementById('info-box').innerHTML = "Hover ove
 </script>
 </body>
 </html>
+
 
 
 
