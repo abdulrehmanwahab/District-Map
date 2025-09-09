@@ -41,11 +41,18 @@
         height: 100%;
     }
 
+    h3 {
+        margin: 10px 0 5px 0;
+        font-size: 16px;
+        color: #222;
+    }
+
     .district-item {
         cursor: pointer;
         padding: 5px;
         margin: 2px 0;
         border-radius: 5px;
+        padding-left: 15px;
     }
 
     .district-item:hover {
@@ -70,7 +77,7 @@
     function defaultStyle(feature) {
         return {
             fillColor: 'lightblue',
-            color: 'black',
+            color: 'gray',
             weight: 1,
             fillOpacity: 0.6
         };
@@ -88,130 +95,142 @@
 
     var geojsonLayer;
 
-    // Load GeoJSON data
+    // --- Load Province Outlines (ADM1) ---
+    fetch('geoBoundaries-PAK-ADM1_simplified.geojson')
+      .then(response => {
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          return response.json();
+      })
+      .then(provinceData => {
+          L.geoJSON(provinceData, {
+              style: function(feature) {
+                  return {
+                      fillOpacity: 0,     // transparent fill
+                      color: "black",     // province outline color
+                      weight: 3           // thicker border
+                  };
+              }
+          }).addTo(map);
+      })
+      .catch(err => console.error("❌ Error loading provinces:", err));
+
+
+    // --- Load Tehsils (ADM3) ---
     fetch('geoBoundaries-PAK-ADM3.geojson')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status} - The file was not found.`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("GeoJSON loaded successfully!", data);
+      .then(response => {
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          return response.json();
+      })
+      .then(data => {
+          console.log("Tehsil GeoJSON loaded successfully!", data);
 
-            // Create GeoJSON layer
-            geojsonLayer = L.geoJSON(data, {
-                style: defaultStyle,
-                onEachFeature: function(feature, layer) {
-                    if (feature.properties && feature.properties.shapeName) {
-                        layer.bindTooltip(feature.properties.shapeName);
-                    }
+          // Create Tehsil layer
+          geojsonLayer = L.geoJSON(data, {
+              style: defaultStyle,
+              onEachFeature: function(feature, layer) {
+                  if (feature.properties && feature.properties.shapeName) {
+                      layer.bindTooltip(feature.properties.shapeName);
+                  }
+              }
+          }).addTo(map);
+
+          // --- Fit map to tehsil bounds ---
+          try {
+              const bounds = geojsonLayer.getBounds();
+              if (bounds.isValid()) {
+                  map.fitBounds(bounds);
+              } else {
+                  map.setView([30.0, 70.0], 5);
+              }
+          } catch (error) {
+              console.error("Error calculating bounds:", error);
+              map.setView([30.0, 70.0], 5);
+          }
+
+          // --- Sidebar build ---
+          buildSidebar(data);
+      })
+      .catch(err => console.error("❌ Error loading tehsils:", err));
+
+
+    // Build sidebar list of tehsils grouped by province (shapeGroup)
+    function buildSidebar(data) {
+        let sidebar = document.getElementById('sidebar');
+
+        if (data.features && data.features.length > 0) {
+            // Group features by shapeGroup (province)
+            let groups = {};
+            data.features.forEach(feature => {
+                if (feature.properties && feature.properties.shapeName && feature.properties.shapeGroup) {
+                    let group = feature.properties.shapeGroup;
+                    if (!groups[group]) groups[group] = [];
+                    groups[group].push(feature);
                 }
-            }).addTo(map);
+            });
 
-            // --- Fit map to data bounds ---
-            try {
-                const bounds = geojsonLayer.getBounds();
-                if (bounds.isValid()) {
-                    map.fitBounds(bounds);
-                    console.log("Map zoomed to data bounds successfully.");
-                } else {
-                    console.warn("Loaded GeoJSON data has invalid bounds. Keeping default view.");
-                    map.setView([30.0, 70.0], 5);
-                }
-            } catch (error) {
-                console.error("Error calculating bounds:", error);
-                map.setView([30.0, 70.0], 5); // Fallback
-            }
+            // Sort groups alphabetically
+            let sortedGroups = Object.keys(groups).sort();
 
-            // Build sidebar list of tehsils grouped by shapeGroup
-let sidebar = document.getElementById('sidebar');
+            sortedGroups.forEach(group => {
+                // Province heading
+                let heading = document.createElement('h3');
+                heading.textContent = group;
+                sidebar.appendChild(heading);
 
-if (data.features && data.features.length > 0) {
-    // Group features by shapeGroup
-    let groups = {};
-    data.features.forEach(feature => {
-        if (feature.properties && feature.properties.shapeName && feature.properties.shapeGroup) {
-            let group = feature.properties.shapeGroup;
-            if (!groups[group]) groups[group] = [];
-            groups[group].push(feature);
+                // Sort tehsils alphabetically inside the group
+                groups[group].sort((a, b) => a.properties.shapeName.localeCompare(b.properties.shapeName));
+
+                // Tehsil list
+                groups[group].forEach(feature => {
+                    let name = feature.properties.shapeName;
+                    let div = document.createElement('div');
+                    div.className = 'district-item';
+                    div.textContent = "• " + name;
+                    div.onclick = () => highlightDistrict(name);
+                    sidebar.appendChild(div);
+                });
+            });
+        } else {
+            console.error("GeoJSON data contains no features.");
+            sidebar.innerHTML = '<p style="color: red;">Error: Loaded data contains no tehsils.</p>';
         }
-    });
-
-    // Sort groups alphabetically
-    let sortedGroups = Object.keys(groups).sort();
-
-    sortedGroups.forEach(group => {
-        // Add group heading
-        let heading = document.createElement('h3');
-        heading.textContent = group;
-        heading.style.marginTop = "10px";
-        heading.style.marginBottom = "5px";
-        heading.style.fontSize = "16px";
-        heading.style.color = "#333";
-        sidebar.appendChild(heading);
-
-        // Sort cities (shapeName) alphabetically inside the group
-        groups[group].sort((a, b) => a.properties.shapeName.localeCompare(b.properties.shapeName));
-
-        // Add city list
-        groups[group].forEach(feature => {
-            let name = feature.properties.shapeName;
-            let div = document.createElement('div');
-            div.className = 'district-item';
-            div.textContent = name;
-            div.onclick = () => highlightDistrict(name);
-            sidebar.appendChild(div);
-        });
-    });
-} else {
-    console.error("GeoJSON data contains no features.");
-    sidebar.innerHTML = '<p style="color: red;">Error: Loaded data contains no tehsils.</p>';
-}
+    }
 
 
-        })
-        .catch(err => {
-            console.error("❌ Error loading GeoJSON:", err);
-            document.getElementById('sidebar').innerHTML = `
-                <p style="color: red; font-weight: bold;">
-                    Error: ${err.message}.
-                    <br>Check the browser's console (F12) for details.
-                </p>`;
-        });
-
+    // Highlight district on click
     function highlightDistrict(districtName) {
-    if (!geojsonLayer) {
-        console.error("GeoJSON layer not loaded yet.");
-        return;
-    }
-
-    let districtFound = false;
-
-    geojsonLayer.eachLayer(layer => {
-        if (layer.feature.properties.shapeName === districtName) {
-            // Check if already highlighted (orange)
-            if (layer.options.fillColor === "orange") {
-                // Unselect: reset style & close tooltip
-              layer.closeTooltip();  
-              geojsonLayer.resetStyle(layer);
-                
-            } else {
-                // Select: apply highlight & open tooltip
-                layer.setStyle(highlightStyle());
-                layer.openTooltip();
-            }
-            districtFound = true;
+        if (!geojsonLayer) {
+            console.error("GeoJSON layer not loaded yet.");
+            return;
         }
-    });
 
-    if (!districtFound) {
-        console.warn(`District/Tehsil named "${districtName}" not found in the data.`);
+        let districtFound = false;
+
+        geojsonLayer.eachLayer(layer => {
+            if (layer.feature.properties.shapeName === districtName) {
+                // Toggle selection
+                if (layer.options.fillColor === "orange") {
+                    // Unselect: reset style & close tooltip
+                    layer.closeTooltip();
+                    geojsonLayer.resetStyle(layer);
+                } else {
+                    // Select: apply highlight & open tooltip
+                    layer.setStyle(highlightStyle());
+                    layer.openTooltip();
+                }
+                districtFound = true;
+            }
+        });
+
+        if (!districtFound) {
+            console.warn(`District/Tehsil named "${districtName}" not found in the data.`);
+        }
     }
-}
-</script>
+ </script>
 </body>
 </html>
+
+
 
 
 
