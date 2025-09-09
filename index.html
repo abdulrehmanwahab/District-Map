@@ -91,9 +91,18 @@ document.getElementById('toggle-callout').addEventListener('change', function() 
 
 document.getElementById('toggle-tooltip').addEventListener('change', function() {
   tooltipEnabled = this.checked;
-  console.log("Tooltip Chekced", tooltipEnabled); // debug log
   if (!tooltipEnabled) {
-        allLayers.forEach(layer => { if (layer.closeTooltip) layer.closeTooltip(); });
+    allLayers.forEach(layer => {
+      if (layer.getTooltip()) {
+        layer.unbindTooltip(); // completely remove the tooltip
+      }
+    });
+  } else {
+    allLayers.forEach(layer => {
+      if (!layer.getTooltip() && layer.feature.properties.shapeName) {
+        layer.bindTooltip(layer.feature.properties.shapeName, { permanent: false });
+      }
+    });
   }
 });
 
@@ -238,5 +247,6 @@ function highlightDistrict(name) {
 </script>
 </body>
 </html>
+
 
 
