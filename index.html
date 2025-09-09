@@ -60,24 +60,14 @@
     // Initialize map
     var map = L.map('map').setView([30.0, 70.0], 5);
 
-    // Base map
+    // Add base map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
     var geojsonLayer;
 
-    // --- Step 1: Draw Pakistan outer boundary ---
-    fetch('pak_boundry.geojson')
-      .then(r => r.json())
-      .then(boundaryData => {
-        L.geoJSON(boundaryData, {
-          style: { color: "black", weight: 3, fillOpacity: 0 }
-        }).addTo(map);
-      })
-      .catch(err => console.error("Error loading country boundary:", err));
-
-    // --- Step 2: Load tehsils ---
+    // --- Load Tehsils (ADM3) only ---
     fetch('geoBoundaries-PAK-ADM3.geojson')
       .then(r => r.json())
       .then(data => {
@@ -98,18 +88,17 @@
           }
         }).addTo(map);
 
-        // Fit map to tehsils
+        // Fit to bounds
         map.fitBounds(geojsonLayer.getBounds());
 
-        // Build sidebar
+        // Build sidebar grouped by province
         buildSidebar(data);
 
-        // Draw province outlines
+        // Build province outlines (merge tehsils by shapeGroup)
         drawProvinceOutlines(data);
-      })
-      .catch(err => console.error("Error loading tehsils:", err));
+      });
 
-    // --- Sidebar ---
+    // --- Build Sidebar grouped by province ---
     function buildSidebar(data) {
       let sidebar = document.getElementById('sidebar');
       let groups = {};
@@ -122,6 +111,7 @@
         }
       });
 
+      // Sort provinces alphabetically
       let sortedGroups = Object.keys(groups).sort();
 
       sortedGroups.forEach(group => {
@@ -131,7 +121,9 @@
         sidebar.appendChild(heading);
 
         // Sort tehsils alphabetically
-        groups[group].sort((a, b) => a.properties.shapeName.localeCompare(b.properties.shapeName));
+        groups[group].sort((a, b) =>
+          a.properties.shapeName.localeCompare(b.properties.shapeName)
+        );
 
         groups[group].forEach(f => {
           let div = document.createElement('div');
@@ -143,10 +135,11 @@
       });
     }
 
-    // --- Province outlines ---
+    // --- Draw merged province outlines ---
     function drawProvinceOutlines(data) {
       let groups = {};
 
+      // Group tehsils by province
       data.features.forEach(f => {
         if (f.properties && f.properties.shapeGroup) {
           let group = f.properties.shapeGroup;
@@ -158,7 +151,7 @@
       Object.keys(groups).forEach(group => {
         let features = groups[group];
 
-        // Merge tehsils to one polygon
+        // Merge all tehsils in this province into one polygon
         let merged = features[0];
         for (let i = 1; i < features.length; i++) {
           try {
@@ -172,7 +165,7 @@
           L.geoJSON(merged, {
             style: {
               color: "black",
-              weight: 2,
+              weight: 3,
               fillOpacity: 0
             }
           }).addTo(map);
@@ -201,4 +194,4 @@
     }
   </script>
 </body>
-</html>
+</html> 
