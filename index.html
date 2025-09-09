@@ -43,12 +43,12 @@
 
   <div class="toggle-container">
     <label for="color-picker-map-bgrd">Select Map Fill Color:</label><br>
-    <input type="color" id="color-picker-map-bgrd" value="#ADD8E6" style="width:55%; margin-top:5px;">
+    <input type="color" id="color-picker-map-bgrd" value="#90EE90" style="width:55%; margin-top:5px;">
   </div>
 
   <div class="toggle-container">
     <label for="color-picker-map-line">Select Map Line Color:</label><br>
-    <input type="color" id="color-picker-map-line" value="#808080" style="width:55%; margin-top:5px;">
+    <input type="color" id="color-picker-map-line" value="#000000" style="width:55%; margin-top:5px;">
   </div>
 
   <div class="toggle-container">
@@ -68,8 +68,8 @@
 var calloutEnabled = true;
 var tooltipEnabled = true;
 var highlightColor = "#ffa500";         // color used to fill a selected district
-var mapColor = "#ADD8E6";               // default fill for all districts
-var mapLineColor = "#808080";           // default boundary color for all districts
+var mapColor = "#90EE90";               // default fill for all districts
+var mapLineColor = "#000000";           // default boundary color for all districts
 
 var map = L.map('map').setView([30.0, 70.0], 5);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -222,3 +222,4 @@ function highlightDistrict(name) {
 </script>
 </body>
 </html>
+
