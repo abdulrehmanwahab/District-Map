@@ -44,7 +44,7 @@ button { display:block; margin-top: 5px; }
     </div>        
     <div class="toggle-container">
         <label for="color-picker-map-line">Select Map Line Color:</label><br>
-        <input type="color" id="color-picker-map-bgrd" value="#ADD8E6" style="width:55%; margin-top:5px;">
+        <input type="color" id="color-picker-map-line" value="#ADD8E6" style="width:55%; margin-top:5px;">
     </div>                
     <div class="toggle-container">
         <button id="btn1" style="width:40%;">Cotton</button>
@@ -88,6 +88,9 @@ document.getElementById('color-picker').addEventListener('input', function() {
   highlightColor = this.value;     
 });
 
+  
+            
+            
 // Map Background Color picker
 document.getElementById('color-picker-map-line').addEventListener('input', function() {
   mapLineColor = this.value;
@@ -179,13 +182,24 @@ function toggleHighlight(layer){
       if(tooltipEnabled) layer.openTooltip();
   }
 }
+function toggleHighlight(layer){
+  if(layer.options.fillColor === highlightColor){
+      geojsonLayer.resetStyle(layer);
+      layer.closeTooltip();
+  } else {
+      layer.setStyle({ fillColor: highlightColor, color: mapLineColor, weight:2, fillOpacity:0.7 });
+      if(tooltipEnabled) layer.openTooltip();
+  }
+}
 
+            
 // Info box
 function showInfo(name){ document.getElementById('info-box').innerHTML = "<b>Selected Tehsil:</b> "+name; }
 function clearInfo(){ document.getElementById('info-box').innerHTML = "Hover over a tehsil or click to see details here"; }
 </script>
 </body>
 </html>
+
 
 
 
