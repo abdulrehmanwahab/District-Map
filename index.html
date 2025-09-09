@@ -9,9 +9,6 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
-  <!-- Turf.js for polygon merging -->
-  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-
   <link rel="icon" href="data:,">
 
   <style>
@@ -26,9 +23,17 @@
       border-right: 1px solid #ccc;
     }
 
+    #info-box {
+      padding: 5px;
+      margin-bottom: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      font-weight: bold;
+    }
+
     #map { flex: 1; height: 100%; }
 
-    h3 { margin: 10px 0 5px 0; font-size: 16px; color: #222; cursor: pointer; }
+    h3 { margin: 10px 0 5px 0; font-size: 16px; color: #222; cursor: default; }
 
     .district-item {
       cursor: pointer;
@@ -42,7 +47,9 @@
   </style>
 </head>
 <body>
-  <div id="sidebar"></div>
+  <div id="sidebar">
+    <div id="info-box">Hover over a tehsil or click to see details here</div>
+  </div>
   <div id="map"></div>
 
   <script>
@@ -57,22 +64,23 @@
     fetch('geoBoundaries-PAK-ADM3.geojson')
       .then(r => r.json())
       .then(data => {
-
         // Draw tehsils
         geojsonLayer = L.geoJSON(data, {
           style: { fillColor: 'lightblue', color: 'gray', weight: 1, fillOpacity: 0.6 },
           onEachFeature: function(feature, layer) {
             if (feature.properties && feature.properties.shapeName) {
               layer.bindTooltip(feature.properties.shapeName);
+              // Show in info-box on hover
+              layer.on('mouseover', function() { showInfo(feature.properties.shapeName); });
+              layer.on('mouseout', function() { clearInfo(); });
             }
-            layer.on('click', function() { toggleHighlight(layer); });
+            layer.on('click', function() { toggleHighlight(layer); showInfo(feature.properties.shapeName); });
           }
         }).addTo(map);
 
         map.fitBounds(geojsonLayer.getBounds());
 
         buildSidebar(data);
-        drawProvinceOutlines(data);
       });
 
     // --- Sidebar ---
@@ -80,6 +88,7 @@
       let sidebar = document.getElementById('sidebar');
       let groups = {};
 
+      // Group tehsils by shapeGroup
       data.features.forEach(f => {
         if (f.properties && f.properties.shapeGroup && f.properties.shapeName) {
           let group = f.properties.shapeGroup;
@@ -91,7 +100,6 @@
       Object.keys(groups).sort().forEach(group => {
         let heading = document.createElement('h3');
         heading.textContent = group;
-        heading.onclick = () => highlightProvince(group, groups[group]);
         sidebar.appendChild(heading);
 
         groups[group].sort((a,b) => a.properties.shapeName.localeCompare(b.properties.shapeName))
@@ -99,13 +107,13 @@
             let div = document.createElement('div');
             div.className = 'district-item';
             div.textContent = f.properties.shapeName;
-            div.onclick = () => highlightDistrict(f.properties.shapeName);
+            div.onclick = () => { highlightDistrict(f.properties.shapeName); showInfo(f.properties.shapeName); };
             sidebar.appendChild(div);
           });
       });
     }
 
-    // --- Highlight district ---
+    // --- Highlight functions ---
     function highlightDistrict(name) {
       geojsonLayer.eachLayer(layer => {
         if (layer.feature.properties.shapeName === name) {
@@ -124,43 +132,16 @@
       }
     }
 
-    // --- Highlight all tehsils in a province ---
-    function highlightProvince(group, features) {
-      features.forEach(f => {
-        geojsonLayer.eachLayer(layer => {
-          if (layer.feature.properties.shapeName === f.properties.shapeName) {
-            toggleHighlight(layer);
-          }
-        });
-      });
+    // --- Info box ---
+    function showInfo(name) {
+      document.getElementById('info-box').innerHTML = "<b>Selected Tehsil:</b> " + name;
     }
 
-    // --- Draw merged province outlines ---
-    function drawProvinceOutlines(data) {
-      let groups = {};
-
-      data.features.forEach(f => {
-        if (f.properties && f.properties.shapeGroup) {
-          let group = f.properties.shapeGroup;
-          if (!groups[group]) groups[group] = [];
-          groups[group].push(f);
-        }
-      });
-
-      Object.keys(groups).forEach(group => {
-        let features = groups[group];
-        let merged = features[0];
-
-        for (let i = 1; i < features.length; i++) {
-          try { merged = turf.union(merged, features[i]); }
-          catch(e) { console.warn("Union failed for", group, e); }
-        }
-
-        if (merged) {
-          L.geoJSON(merged, { style: { color: "black", weight: 3, fillOpacity: 0 } }).addTo(map);
-        }
-      });
+    function clearInfo() {
+      document.getElementById('info-box').innerHTML = "Hover over a tehsil or click to see details here";
     }
   </script>
 </body>
 </html>
+
+
