@@ -95,7 +95,52 @@
         buildSidebar(data);
 
         // Build province outlines (merge tehsils by shapeGroup)
-        drawProvinceOutlines(data);
+        //drawProvinceOutlines(data);
+
+       // ----------- EXTERNAL TOOLTIP CODE START -----------
+      // Create container for external tooltips
+      let tooltipContainer = document.createElement('div');
+      tooltipContainer.style.position = 'absolute';
+      tooltipContainer.style.top = '10px';
+      tooltipContainer.style.right = '10px';
+      tooltipContainer.style.width = '200px';
+      tooltipContainer.style.background = 'white';
+      tooltipContainer.style.padding = '5px';
+      tooltipContainer.style.border = '1px solid #ccc';
+      tooltipContainer.style.fontSize = '14px';
+      tooltipContainer.style.pointerEvents = 'none';
+      tooltipContainer.style.zIndex = 1000;
+      document.body.appendChild(tooltipContainer);
+
+      function showExternalTooltip(feature) {
+          tooltipContainer.innerHTML = feature.properties.shapeName;
+          let centroid = turf.centroid(feature).geometry.coordinates; // [lng, lat]
+          let latlngs = [
+              [centroid[1], centroid[0]], // point on map
+              map.containerPointToLatLng([map.getSize().x - 150, 30]) // label position
+          ];
+          if (window.connectorLine) map.removeLayer(window.connectorLine);
+          window.connectorLine = L.polyline(latlngs, {color: 'black', weight: 1, dashArray: '4'}).addTo(map);
+      }
+
+      function hideExternalTooltip() {
+          tooltipContainer.innerHTML = '';
+          if (window.connectorLine) map.removeLayer(window.connectorLine);
+          window.connectorLine = null;
+      }
+
+      // Add events to tehsils
+      geojsonLayer.eachLayer(layer => {
+          layer.on('mouseover', function(e) {
+              showExternalTooltip(layer.feature);
+          });
+          layer.on('mouseout', function(e) {
+              hideExternalTooltip();
+          });
+      });
+      // ----------- EXTERNAL TOOLTIP CODE END -----------
+
+        
       });
 
     // --- Build Sidebar grouped by province ---
@@ -195,3 +240,4 @@
   </script>
 </body>
 </html> 
+
