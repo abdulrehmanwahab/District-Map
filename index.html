@@ -24,16 +24,23 @@ h3 { margin: 10px 0 5px 0; font-size: 16px; color: #222; cursor: default; }
 </head>
 <body>
 <div id="sidebar">
-  <div class="toggle-container">
-    <input type="checkbox" id="toggle-callout" checked>
-    <label for="toggle-callout">Show Callout</label>
-  </div>
+            <div class="toggle-container">
+              <input type="checkbox" id="toggle-callout" checked>
+              <label for="toggle-callout">Show Callout</label>
+            </div>
+            <div class="toggle-container">
+              <input type="checkbox" id="toggle-tooltip" checked>
+              <label for="toggle-tooltip">Show Hover Tooltip</label>
+            </div>
 </div>
 <div id="map">
   <div id="info-box">Hover over a tehsil or click to see details here</div>
 </div>
 
 <script>
+var calloutEnabled = true;
+var tooltipEnabled = true;
+            
 var map = L.map('map').setView([30.0, 70.0], 5);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
@@ -43,11 +50,24 @@ var geojsonLayer;
 var calloutEnabled = true;
 
 // Checkbox toggle
+// Checkbox toggles
 document.getElementById('toggle-callout').addEventListener('change', function() {
   calloutEnabled = this.checked;
   document.getElementById('info-box').style.display = calloutEnabled ? 'block' : 'none';
 });
 
+document.getElementById('toggle-tooltip').addEventListener('change', function() {
+  tooltipEnabled = this.checked;
+});
+// Update onEachFeature
+layer.on('mouseover', function() {
+  if(calloutEnabled) showInfo(feature.properties.shapeName);
+  if(tooltipEnabled) layer.openTooltip();
+});
+layer.on('mouseout', function() {
+  if(calloutEnabled) clearInfo();
+  if(tooltipEnabled) layer.closeTooltip();
+});
 // Load Tehsils
 fetch('geoBoundaries-PAK-ADM3.geojson')
 .then(r => r.json())
@@ -117,4 +137,5 @@ function clearInfo(){ document.getElementById('info-box').innerHTML = "Hover ove
 </script>
 </body>
 </html>
+
 
