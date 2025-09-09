@@ -70,7 +70,7 @@
     function defaultStyle(feature) {
         return {
             fillColor: 'lightblue',
-            color: 'yellow',
+            color: 'black',
             weight: 1,
             fillOpacity: 0.6
         };
@@ -124,25 +124,51 @@
                 map.setView([30.0, 70.0], 5); // Fallback
             }
 
-            // Build sidebar list of tehsils
-            let sidebar = document.getElementById('sidebar');
-            if (data.features && data.features.length > 0) {
-                data.features.forEach(feature => {
-                    if (feature.properties && feature.properties.shapeName) {
-                        let name = feature.properties.shapeName;
-                        let div = document.createElement('div');
-                        div.className = 'district-item';
-                        div.textContent = name;
-                        div.onclick = () => highlightDistrict(name);
-                        sidebar.appendChild(div);
-                    } else {
-                        console.warn("Feature missing shapeName property:", feature);
-                    }
-                });
-            } else {
-                console.error("GeoJSON data contains no features.");
-                sidebar.innerHTML = '<p style="color: red;">Error: Loaded data contains no tehsils.</p>';
-            }
+            // Build sidebar list of tehsils grouped by shapeGroup
+let sidebar = document.getElementById('sidebar');
+
+if (data.features && data.features.length > 0) {
+    // Group features by shapeGroup
+    let groups = {};
+    data.features.forEach(feature => {
+        if (feature.properties && feature.properties.shapeName && feature.properties.shapeGroup) {
+            let group = feature.properties.shapeGroup;
+            if (!groups[group]) groups[group] = [];
+            groups[group].push(feature);
+        }
+    });
+
+    // Sort groups alphabetically
+    let sortedGroups = Object.keys(groups).sort();
+
+    sortedGroups.forEach(group => {
+        // Add group heading
+        let heading = document.createElement('h3');
+        heading.textContent = group;
+        heading.style.marginTop = "10px";
+        heading.style.marginBottom = "5px";
+        heading.style.fontSize = "16px";
+        heading.style.color = "#333";
+        sidebar.appendChild(heading);
+
+        // Sort cities (shapeName) alphabetically inside the group
+        groups[group].sort((a, b) => a.properties.shapeName.localeCompare(b.properties.shapeName));
+
+        // Add city list
+        groups[group].forEach(feature => {
+            let name = feature.properties.shapeName;
+            let div = document.createElement('div');
+            div.className = 'district-item';
+            div.textContent = name;
+            div.onclick = () => highlightDistrict(name);
+            sidebar.appendChild(div);
+        });
+    });
+} else {
+    console.error("GeoJSON data contains no features.");
+    sidebar.innerHTML = '<p style="color: red;">Error: Loaded data contains no tehsils.</p>';
+}
+
 
         })
         .catch(err => {
@@ -186,6 +212,7 @@
 </script>
 </body>
 </html>
+
 
 
 
