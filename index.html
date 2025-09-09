@@ -87,4 +87,33 @@ function buildSidebar(data){
     heading.textContent = group;
     sidebar.appendChild(heading);
 
-    groups[group]
+    groups[group].sort((a,b) => a.properties.shapeName.localeCompare(b.properties.shapeName))
+      .forEach(f => {
+        let div = document.createElement('div');
+        div.className = 'district-item';
+        div.textContent = f.properties.shapeName;
+        div.onclick = () => { highlightDistrict(f.properties.shapeName); if(calloutEnabled) showInfo(f.properties.shapeName); };
+        sidebar.appendChild(div);
+      });
+  });
+}
+
+// Highlight
+function highlightDistrict(name){
+  geojsonLayer.eachLayer(layer => { if(layer.feature.properties.shapeName===name) toggleHighlight(layer); });
+}
+function toggleHighlight(layer){
+  if(layer.options.fillColor==="orange"){
+    geojsonLayer.resetStyle(layer); layer.closeTooltip();
+  } else {
+    layer.setStyle({ fillColor:'orange', color:'red', weight:2, fillOpacity:0.7 });
+    layer.openTooltip();
+  }
+}
+
+// Info box
+function showInfo(name){ document.getElementById('info-box').innerHTML = "<b>Selected Tehsil:</b> "+name; }
+function clearInfo(){ document.getElementById('info-box').innerHTML = "Hover over a tehsil or click to see details here"; }
+</script>
+</body>
+</html>
