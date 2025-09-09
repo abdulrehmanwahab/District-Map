@@ -35,13 +35,13 @@ h3 { margin: 10px 0 5px 0; font-size: 16px; color: #222; cursor: default; }
     </div>
     <div class="toggle-container">
         <label for="color-picker">Select Highlight Color:</label><br>
-        <input type="color" id="color-picker" value="#ffa500" style="width:50%; margin-top:5px;">
+        <input type="color" id="color-picker" value="#ffa500" style="width:40%; margin-top:5px;">
     </div>
     <div class="toggle-container">
-        <button id="btn1" style="width:50%; margin-bottom:5px;">Cotton</button>
-        <button id="btn2" style="width:50%; margin-bottom:5px;">Rice</button>
-        <button id="btn3" style="width:50%; margin-bottom:5px;">Sesame</button>
-        <button id="btn4" style="width:50%; margin-bottom:5px;">Wheat</button>
+        <button id="btn1" style="width:40%; margin-bottom:5px;">Cotton</button>
+        <button id="btn2" style="width:40%; margin-bottom:5px;">Rice</button>
+        <button id="btn3" style="width:40%; margin-bottom:5px;">Sesame</button>
+        <button id="btn4" style="width:40%; margin-bottom:5px;">Wheat</button>
     </div>
 </div>
 
@@ -83,10 +83,25 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
     style: { fillColor: 'lightblue', color: 'gray', weight: 1, fillOpacity: 0.6 },
     onEachFeature: function(feature, layer) {
         if(feature.properties && feature.properties.shapeName){
-            layer.bindTooltip(feature.properties.shapeName);
-            layer.on('mouseover', function(){ if(calloutEnabled) showInfo(feature.properties.shapeName); });
-            layer.on('mouseout', function(){ if(calloutEnabled) clearInfo(); });
-        }
+  if(feature.properties && feature.properties.shapeName){
+    layer.bindTooltip(feature.properties.shapeName, {permanent:false});
+    
+    layer.on('mouseover', function(){
+      if(calloutEnabled) showInfo(feature.properties.shapeName);
+      if(tooltipEnabled) layer.openTooltip();
+    });
+    
+    layer.on('mouseout', function(){
+      if(calloutEnabled) clearInfo();
+      if(tooltipEnabled) layer.closeTooltip();
+    });
+  }
+
+  layer.on('click', function(){
+    toggleHighlight(layer);
+    if(calloutEnabled) showInfo(layer.feature.properties.shapeName);
+  });
+}
         layer.on('click', function(){ toggleHighlight(layer); if(calloutEnabled) showInfo(layer.feature.properties.shapeName); });
     }
 }).addTo(map);
@@ -145,5 +160,6 @@ function clearInfo(){ document.getElementById('info-box').innerHTML = "Hover ove
 </script>
 </body>
 </html>
+
 
 
