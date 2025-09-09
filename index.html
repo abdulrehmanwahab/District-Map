@@ -12,7 +12,7 @@ html, body { height: 100%; margin: 0; padding: 0; }
 body { display: flex; font-family: Arial, sans-serif; }
 #sidebar { width: 25%; background: #f8f9fa; overflow-y: auto; padding: 10px; border-right: 1px solid #ccc; }
 #map { flex: 1; height: 100%; position: relative; }
-#info-box { position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+#info-box { position: absolute; top: 10px; left: 30%; transform: translateX(-50%);
             z-index: 1000; padding: 8px 15px; background: rgba(255,255,255,0.95);
             border: 1px solid #333; border-radius: 5px; font-weight: bold;
             pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: block; }
@@ -35,9 +35,13 @@ button { display:block; margin-top: 5px; }
         <label for="toggle-tooltip">Show Hover Tooltip</label>
     </div>
     <div class="toggle-container">
-        <label for="color-picker">Select Highlight Color:</label><br>
-        <input type="color" id="color-picker" value="#ffa500" style="width:40%; margin-top:5px;">
+        <label for="color-picker">Select Dist Highlight Color:</label><br>
+        <input type="color" id="color-picker" value="#ffa500" style="width:50%; margin-top:5px;">
     </div>
+    <div class="toggle-container">
+        <label for="color-picker-map-bgrd">Select Map Background Color:</label><br>
+        <input type="color" id="color-picker-map-bgrd" value="#ffa500" style="width:50%; margin-top:5px;">
+    </div>        
     <div class="toggle-container">
         <button id="btn1" style="width:40%;">Cotton</button>
         <button id="btn2" style="width:40%;">Rice</button>
@@ -52,7 +56,7 @@ button { display:block; margin-top: 5px; }
 
 <script>
 var calloutEnabled = true;
-var tooltipEnabled = true;
+var tooltipEnabled = false;
 var highlightColor = "#ffa500";
 
 var map = L.map('map').setView([30.0, 70.0], 5);
@@ -76,6 +80,11 @@ document.getElementById('toggle-tooltip').addEventListener('change', function() 
 document.getElementById('color-picker').addEventListener('input', function() {
   highlightColor = this.value;
 });
+
+// Map Background Color picker
+document.getElementById('color-picker-map-bgrd').addEventListener('input', function() {
+  highlightColor = this.value;
+});            
 
 // Load Tehsils
 fetch('geoBoundaries-PAK-ADM3.geojson')
@@ -163,4 +172,5 @@ function clearInfo(){ document.getElementById('info-box').innerHTML = "Hover ove
 </script>
 </body>
 </html>
+
 
