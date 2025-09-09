@@ -96,139 +96,78 @@
     var geojsonLayer;
 
     // --- Load Province Outlines (ADM1) ---
-    fetch('geoBoundaries-PAK-ADM1_simplified.geojson')
-      .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          return response.json();
-      })
-      .then(provinceData => {
-          L.geoJSON(provinceData, {
-              style: function(feature) {
-                  return {
-                      fillOpacity: 0,     // transparent fill
-                      color: "black",     // province outline color
-                      weight: 3           // thicker border
-                  };
+fetch('geoBoundaries-PAK-ADM1_simplified.geojson')
+  .then(response => {
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return response.json();
+  })
+  .then(provinceData => {
+      L.geoJSON(provinceData, {
+          style: function(feature) {
+              return {
+                  fillOpacity: 0,       // transparent inside
+                  color: "black",       // province border color
+                  weight: 3             // thick
+              };
+          },
+          onEachFeature: function(feature, layer) {
+              if (feature.properties && feature.properties.shapeName) {
+                  layer.bindTooltip(feature.properties.shapeName, {permanent: true, direction: "center"});
               }
-          }).addTo(map);
-      })
-      .catch(err => console.error("❌ Error loading provinces:", err));
+          }
+      }).bringToFront().addTo(map);  // ensure provinces are drawn above tehsils
+  })
+  .catch(err => console.error("❌ Error loading provinces:", err));
 
 
-    // --- Load Tehsils (ADM3) ---
-    fetch('geoBoundaries-PAK-ADM3.geojson')
-      .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          return response.json();
-      })
-      .then(data => {
-          console.log("Tehsil GeoJSON loaded successfully!", data);
+// --- Load Tehsils (ADM3) ---
+fetch('geoBoundaries-PAK-ADM3.geojson')
+  .then(response => {
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return response.json();
+  })
+  .then(data => {
+      console.log("Tehsil GeoJSON loaded successfully!", data);
 
-          // Create Tehsil layer
-          geojsonLayer = L.geoJSON(data, {
-              style: defaultStyle,
-              onEachFeature: function(feature, layer) {
-                  if (feature.properties && feature.properties.shapeName) {
-                      layer.bindTooltip(feature.properties.shapeName);
-                  }
+      // Create Tehsil layer
+      geojsonLayer = L.geoJSON(data, {
+          style: function(feature) {
+              return {
+                  fillColor: 'lightblue',
+                  color: 'gray',     // thin borders for tehsils
+                  weight: 1,         // thinner than provinces
+                  fillOpacity: 0.6
+              };
+          },
+          onEachFeature: function(feature, layer) {
+              if (feature.properties && feature.properties.shapeName) {
+                  layer.bindTooltip(feature.properties.shapeName);
               }
-          }).addTo(map);
+          }
+      }).addTo(map);
 
-          // --- Fit map to tehsil bounds ---
-          try {
-              const bounds = geojsonLayer.getBounds();
-              if (bounds.isValid()) {
-                  map.fitBounds(bounds);
-              } else {
-                  map.setView([30.0, 70.0], 5);
-              }
-          } catch (error) {
-              console.error("Error calculating bounds:", error);
+      // Fit map to tehsil bounds
+      try {
+          const bounds = geojsonLayer.getBounds();
+          if (bounds.isValid()) {
+              map.fitBounds(bounds);
+          } else {
               map.setView([30.0, 70.0], 5);
           }
+      } catch (error) {
+          console.error("Error calculating bounds:", error);
+          map.setView([30.0, 70.0], 5);
+      }
 
-          // --- Sidebar build ---
-          buildSidebar(data);
-      })
-      .catch(err => console.error("❌ Error loading tehsils:", err));
-
-
-    // Build sidebar list of tehsils grouped by province (shapeGroup)
-    function buildSidebar(data) {
-        let sidebar = document.getElementById('sidebar');
-
-        if (data.features && data.features.length > 0) {
-            // Group features by shapeGroup (province)
-            let groups = {};
-            data.features.forEach(feature => {
-                if (feature.properties && feature.properties.shapeName && feature.properties.shapeGroup) {
-                    let group = feature.properties.shapeGroup;
-                    if (!groups[group]) groups[group] = [];
-                    groups[group].push(feature);
-                }
-            });
-
-            // Sort groups alphabetically
-            let sortedGroups = Object.keys(groups).sort();
-
-            sortedGroups.forEach(group => {
-                // Province heading
-                let heading = document.createElement('h3');
-                heading.textContent = group;
-                sidebar.appendChild(heading);
-
-                // Sort tehsils alphabetically inside the group
-                groups[group].sort((a, b) => a.properties.shapeName.localeCompare(b.properties.shapeName));
-
-                // Tehsil list
-                groups[group].forEach(feature => {
-                    let name = feature.properties.shapeName;
-                    let div = document.createElement('div');
-                    div.className = 'district-item';
-                    div.textContent = "• " + name;
-                    div.onclick = () => highlightDistrict(name);
-                    sidebar.appendChild(div);
-                });
-            });
-        } else {
-            console.error("GeoJSON data contains no features.");
-            sidebar.innerHTML = '<p style="color: red;">Error: Loaded data contains no tehsils.</p>';
-        }
-    }
-
-
-    // Highlight district on click
-    function highlightDistrict(districtName) {
-        if (!geojsonLayer) {
-            console.error("GeoJSON layer not loaded yet.");
-            return;
-        }
-
-        let districtFound = false;
-
-        geojsonLayer.eachLayer(layer => {
-            if (layer.feature.properties.shapeName === districtName) {
-                // Toggle selection
-                if (layer.options.fillColor === "orange") {
-                    // Unselect: reset style & close tooltip
-                    layer.closeTooltip();
-                    geojsonLayer.resetStyle(layer);
-                } else {
-                    // Select: apply highlight & open tooltip
-                    layer.setStyle(highlightStyle());
-                    layer.openTooltip();
-                }
-                districtFound = true;
-            }
-        });
-
-        if (!districtFound) {
-            console.warn(`District/Tehsil named "${districtName}" not found in the data.`);
-        }
+      // Build sidebar
+      buildSidebar(data);
+  })
+  .catch(err => console.error("❌ Error loading tehsils:", err));
     }
  </script>
 </body>
 </html>
+
 
 
 
