@@ -175,11 +175,11 @@ function highlightDistrict(name){
 }
 
 function toggleHighlight(layer){
-  if(layer.options.fillColor === highlightColor){
+  if(layer.options.fillColor === mapColor){
       geojsonLayer.resetStyle(layer);
       layer.closeTooltip();
   } else {
-      layer.setStyle({ fillColor: highlightColor, color: mapLineColor, weight:2, fillOpacity:0.7 });
+      layer.setStyle({ fillColor: mapColor, color: mapLineColor, weight:2, fillOpacity:0.8 });
       if(tooltipEnabled) layer.openTooltip();
   }
 }
@@ -191,6 +191,7 @@ function clearInfo(){ document.getElementById('info-box').innerHTML = "Hover ove
 </script>
 </body>
 </html>
+
 
 
 
