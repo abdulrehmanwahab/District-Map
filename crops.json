@@ -1,5 +1,3 @@
-// Crop data (in a real application, you would load this from a JSON file)
-       
 {
   "rice": {
     "Punjab": {
