@@ -67,7 +67,7 @@
   </div>
   <div style="display:flex; align-items:center; margin-bottom:5px;">
     <button id="btn2" style="flex:1;">Rice</button>
-    <input type="color" id="color-rice" value="#e6d136" style="margin-left:5px; width:30px; height:30px;">
+    <input type="color" id="color-rice" value="#90EE90" style="margin-left:5px; width:30px; height:30px;">
   </div>
   <div style="display:flex; align-items:center; margin-bottom:5px;">
     <button id="btn3" style="flex:1;">Sesame</button>
@@ -119,6 +119,14 @@ document.getElementById('toggle-tooltip').addEventListener('change', function() 
   });
 });
 
+// Province toggle
+document.getElementById('province-btn').addEventListener('change', function() {
+  if (this.checked && pakprovince) {
+    pakprovince.addTo(map);
+    pakprovince.bringToBack();
+  } else if (pakprovince) map.removeLayer(pakprovince);
+});
+
 document.getElementById('color-picker').addEventListener('input', function() {
   currentHighlightColor = this.value;
 });
@@ -165,39 +173,36 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
   }).addTo(map);
 
   map.fitBounds(geojsonLayer.getBounds());
+
   buildSidebar(data);
 
-  /* ==== Load ADM1 Province Layer ==== */
+  // ==== Load Province Layer ====
   fetch('geoBoundaries-PAK-ADM1.geojson')
-  .then(r => r.json())
-  .then(data => {
-    pakprovince = L.geoJSON(data, {
-      style: {
-        fillColor: 'transparent',
-        fillOpacity: 0,
-        color: "#000000",
-        weight: 3,
-        opacity: 1
-      },
-      interactive: false,
-      onEachFeature: function(feature, layer) {
-        if (feature.properties && feature.properties.name) {
-          layer.bindTooltip(feature.properties.name);
+    .then(r => r.json())
+    .then(data => {
+      pakprovince = L.geoJSON(data, {
+        style: {
+          fillColor: mapColor,
+          fillOpacity: 1,
+          color: "#000000",
+          weight: 3,
+          opacity: 1
+        },
+        interactive: false,
+        onEachFeature: function(feature, layer) {
+          if (feature.properties && feature.properties.name) {
+            layer.bindTooltip(feature.properties.name);
+          }
         }
-      }
+      }).addTo(map);
+      pakprovince.bringToBack();
     });
 
-    document.getElementById('province-btn').addEventListener('change', function() {
-      if (this.checked) {
-        pakprovince.addTo(map);
-        pakprovince.bringToBack();
-      } else {
-        if (pakprovince) map.removeLayer(pakprovince);
-      }
-    });
-  }); // ADM1 fetch ends
-
-}); // ADM3 fetch ends
+  // ==== Load Crop Data ====
+  fetch('crops.json')
+    .then(r => r.json())
+    .then(data => cropData = data);
+});
 
 /* ==== Styles ==== */
 function defaultStyle(feature) {
@@ -210,32 +215,19 @@ function defaultStyle(feature) {
 }
 
 /* ==== Info Box ==== */
-function showInfo(name) { 
-  document.getElementById('info-box').innerHTML = "<b>Selected Tehsil:</b> " + name; 
-}
-function clearInfo() { 
-  document.getElementById('info-box').innerHTML = "Hover over a tehsil or click to see details here"; 
-}
+function showInfo(name) { document.getElementById('info-box').innerHTML = "<b>Selected Tehsil:</b> " + name; }
+function clearInfo() { document.getElementById('info-box').innerHTML = "Hover over a tehsil or click to see details here"; }
 
 /* ==== Highlight Functions ==== */
-function toggleHighlight(layer) {
-  if (layer._isHighlighted) {
-    layer._isHighlighted = false;
-    delete layer._highlightColor;
-    geojsonLayer.resetStyle(layer);
-    if (!tooltipEnabled) layer.closeTooltip();
-  } else {
-    layer._isHighlighted = true;
-    layer._highlightColor = currentHighlightColor;
-    layer.setStyle({
-      fillColor: layer._highlightColor,
-      color: mapLineColor,
-      weight: 3,
-      fillOpacity: 0.75
-    });
-    layer.bringToFront();
-    if (tooltipEnabled) layer.openTooltip();
+function toggleCrop(cropName) {
+  if (!cropData) {
+    console.warn("Crop data not yet loaded!");
+    return;
   }
+  if (activeCrops.has(cropName)) removeCropHighlight(cropName), activeCrops.delete(cropName);
+  else highlightCrop(cropName), activeCrops.add(cropName);
+
+  if (activeCrops.size === 0) clearHighlights();
 }
 
 function clearHighlights() {
@@ -269,10 +261,7 @@ function buildSidebar(data) {
         let div = document.createElement('div');
         div.className = 'district-item';
         div.textContent = f.properties.shapeName;
-        div.onclick = () => { 
-          highlightDistrict(f.properties.shapeName); 
-          if(calloutEnabled) showInfo(f.properties.shapeName); 
-        };
+        div.onclick = () => { highlightDistrict(f.properties.shapeName); if(calloutEnabled) showInfo(f.properties.shapeName); };
         sidebar.appendChild(div);
       });
   });
@@ -344,14 +333,8 @@ function removeCropHighlight(cropName) {
 }
 
 function toggleCrop(cropName) {
-  if (!cropData) return;
-  if (activeCrops.has(cropName)) {
-    removeCropHighlight(cropName);
-    activeCrops.delete(cropName);
-  } else {
-    highlightCrop(cropName);
-    activeCrops.add(cropName);
-  }
+  if (activeCrops.has(cropName)) removeCropHighlight(cropName), activeCrops.delete(cropName);
+  else highlightCrop(cropName), activeCrops.add(cropName);
 
   if (activeCrops.size === 0) clearHighlights();
 }
@@ -365,4 +348,6 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
+
 
