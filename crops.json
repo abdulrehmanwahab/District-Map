@@ -1,0 +1,123 @@
+// Crop data (in a real application, you would load this from a JSON file)
+       
+{
+  "rice": {
+    "Punjab": {
+      "Gujranwala Division": ["Gujranwala City", "Gujranwala Saddar", "Wazirabad", "Kamoke", "Nowshera Virkan"],
+      "Lahore Division": ["Lahore City", "Lahore Cantt", "Model Town", "Raiwind", "Shalimar"],
+      "Sialkot Division": ["Sialkot City", "Sialkot Cantt", "Daska", "Sambrial", "Pasrur"],
+      "Gujrat Division": ["Gujrat", "Kharian", "Sarai Alamgir", "Jalalpur Jattan"],
+      "Sheikhupura Division": ["Sheikhupura", "Ferozewala", "Muridke", "Sharaqpur"],
+      "Sargodha Division": ["Sargodha City", "Sargodha Cantt", "Bhalwal", "Sahiwal", "Bhehra"],
+      "Faisalabad Division": ["Faisalabad City", "Faisalabad Saddar", "Jaranwala", "Samundri", "Tandlianwala"],
+      "Sahiwal Division": ["Sahiwal", "Chichawatni", "Harappa"],
+      "Multan Division": ["Multan City", "Multan Saddar", "Shujabad", "Jalalpur Pirwala"],
+      "Bahawalpur Division": ["Bahawalpur City", "Bahawalpur Saddar", "Ahmadpur East", "Hasilpur", "Khairpur Tamewali"],
+      "Dera Ghazi Khan Division": ["Dera Ghazi Khan", "Taunsa", "Kot Chutta", "Tribal Area"]
+    },
+    "Sindh": {
+      "Larkana Division": ["Larkana", "Ratodero", "Dokri", "Bakrani", "Kamber"],
+      "Sukkur Division": ["Sukkur", "Rohri", "Pano Aqil", "Salehpat", "Shikarpur"],
+      "Shaheed Benazirabad Division": ["Nawabshah", "Daulatpur", "Sakrand", "Qazi Ahmed"],
+      "Hyderabad Division": ["Hyderabad City", "Hyderabad Rural", "Latifabad", "Qasimabad"],
+      "Mirpur Khas Division": ["Mirpur Khas", "Digri", "Kot Ghulam Muhammad", "Hussain Bux Mari"],
+      "Thatta Division": ["Thatta", "Mirpur Sakro", "Keti Bandar", "Ghorabari"],
+      "Badin Division": ["Badin", "Matli", "Tando Bago", "Talhar"]
+    },
+    "Khyber Pakhtunkhwa": {
+      "Swat Division": ["Mingora", "Barikot", "Kabal", "Khwaza Khela"],
+      "Mardan Division": ["Mardan", "Takht Bhai", "Katlang", "Rustam"],
+      "Peshawar Division": ["Peshawar", "Charsadda", "Shabqadar", "Tangi"],
+      "Malakand Division": ["Batkhela", "Dargai", "Chakdara", "Thana"],
+      "Bannu Division": ["Bannu", "Domel", "Baka Khel"],
+      "Dera Ismail Khan Division": ["Dera Ismail Khan", "Paharpur", "Kulachi", "Paroa"]
+    },
+    "Balochistan": {
+      "Nasirabad Division": ["Nasirabad", "Dera Murad Jamali", "Tamboo", "Chatter"],
+      "Jafarabad Division": ["Dera Allah Yar", "Gandakha", "Usta Muhammad"],
+      "Sibi Division": ["Sibi", "Lehri", "Kotla"],
+      "Kachhi Division": ["Bolan", "Bhag", "Dhadar"]
+    },
+    "Azad Jammu & Kashmir": {
+      "Mirpur Division": ["Mirpur", "Dadyal", "Bhimber"],
+      "Muzaffarabad Division": ["Muzaffarabad", "Hattian", "Leepa"],
+      "Poonch Division": ["Rawalakot", "Hajira", "Bagh"]
+    },
+    "Gilgit-Baltistan": {
+      "Diamer Division": ["Chilas", "Darel", "Tangir"],
+      "Gilgit Division": ["Gilgit", "Juglot", "Nomal"],
+      "Skardu Division": ["Skardu", "Shigar", "Kharmang"]
+    }
+  },
+  "sesame_seed": {
+    "Punjab": {
+      "Multan Division": ["Multan City", "Multan Saddar", "Shujabad", "Jalalpur Pirwala"],
+      "Bahawalpur Division": ["Bahawalpur City", "Bahawalpur Saddar", "Ahmadpur East", "Hasilpur", "Khairpur Tamewali"],
+      "Dera Ghazi Khan Division": ["Dera Ghazi Khan", "Taunsa", "Kot Chutta", "Tribal Area"]
+    },
+    "Sindh": {
+      "Mirpur Khas Division": ["Mirpur Khas", "Digri", "Kot Ghulam Muhammad", "Hussain Bux Mari"],
+      "Thatta Division": ["Thatta", "Mirpur Sakro", "Keti Bandar", "Ghorabari"],
+      "Badin Division": ["Badin", "Matli", "Tando Bago", "Talhar"]
+    },
+    "Khyber Pakhtunkhwa": {
+      "Dera Ismail Khan Division": ["Dera Ismail Khan", "Paharpur", "Kulachi", "Paroa"]
+    },
+    "Balochistan": {
+      "Nasirabad Division": ["Nasirabad", "Dera Murad Jamali", "Tamboo", "Chatter"],
+      "Jafarabad Division": ["Dera Allah Yar", "Gandakha", "Usta Muhammad"]
+    }
+  },
+  "wheat": {
+    "Punjab": {
+      "Faisalabad Division": ["Faisalabad City", "Faisalabad Saddar", "Jaranwala", "Samundri", "Tandlianwala"],
+      "Sahiwal Division": ["Sahiwal", "Chichawatni", "Harappa"],
+      "Multan Division": ["Multan City", "Multan Saddar", "Shujabad", "Jalalpur Pirwala"],
+      "Bahawalpur Division": ["Bahawalpur City", "Bahawalpur Saddar", "Ahmadpur East", "Hasilpur", "Khairpur Tamewali"],
+      "Dera Ghazi Khan Division": ["Dera Ghazi Khan", "Taunsa", "Kot Chutta", "Tribal Area"],
+      "Sargodha Division": ["Sargodha City", "Sargodha Cantt", "Bhalwal", "Sahiwal", "Bhehra"],
+      "Gujranwala Division": ["Gujranwala City", "Gujranwala Saddar", "Wazirabad", "Kamoke", "Nowshera Virkan"],
+      "Lahore Division": ["Lahore City", "Lahore Cantt", "Model Town", "Raiwind", "Shalimar"]
+    },
+    "Sindh": {
+      "Larkana Division": ["Larkana", "Ratodero", "Dokri", "Bakrani", "Kamber"],
+      "Sukkur Division": ["Sukkur", "Rohri", "Pano Aqil", "Salehpat", "Shikarpur"],
+      "Shaheed Benazirabad Division": ["Nawabshah", "Daulatpur", "Sakrand", "Qazi Ahmed"],
+      "Hyderabad Division": ["Hyderabad City", "Hyderabad Rural", "Latifabad", "Qasimabad"]
+    },
+    "Khyber Pakhtunkhwa": {
+      "Peshawar Division": ["Peshawar", "Charsadda", "Shabqadar", "Tangi"],
+      "Mardan Division": ["Mardan", "Takht Bhai", "Katlang", "Rustam"],
+      "Malakand Division": ["Batkhela", "Dargai", "Chakdara", "Thana"],
+      "Swat Division": ["Mingora", "Barikot", "Kabal", "Khwaza Khela"],
+      "Bannu Division": ["Bannu", "Domel", "Baka Khel"],
+      "Dera Ismail Khan Division": ["Dera Ismail Khan", "Paharpur", "Kulachi", "Paroa"]
+    },
+    "Balochistan": {
+      "Nasirabad Division": ["Nasirabad", "Dera Murad Jamali", "Tamboo", "Chatter"],
+      "Jafarabad Division": ["Dera Allah Yar", "Gandakha", "Usta Muhammad"],
+      "Sibi Division": ["Sibi", "Lehri", "Kotla"],
+      "Kachhi Division": ["Bolan", "Bhag", "Dhadar"]
+    }
+  },
+  "cotton": {
+    "Punjab": {
+      "Multan Division": ["Multan City", "Multan Saddar", "Shujabad", "Jalalpur Pirwala"],
+      "Bahawalpur Division": ["Bahawalpur City", "Bahawalpur Saddar", "Ahmadpur East", "Hasilpur", "Khairpur Tamewali"],
+      "Dera Ghazi Khan Division": ["Dera Ghazi Khan", "Taunsa", "Kot Chutta", "Tribal Area"],
+      "Faisalabad Division": ["Faisalabad City", "Faisalabad Saddar", "Jaranwala", "Samundri", "Tandlianwala"],
+      "Sahiwal Division": ["Sahiwal", "Chichawatni", "Harappa"]
+    },
+    "Sindh": {
+      "Sukkur Division": ["Sukkur", "Rohri", "Pano Aqil", "Salehpat", "Shikarpur"],
+      "Shaheed Benazirabad Division": ["Nawabshah", "Daulatpur", "Sakrand", "Qazi Ahmed"],
+      "Hyderabad Division": ["Hyderabad City", "Hyderabad Rural", "Latifabad", "Qasimabad"],
+      "Mirpur Khas Division": ["Mirpur Khas", "Digri", "Kot Ghulam Muhammad", "Hussain Bux Mari"],
+      "Larkana Division": ["Larkana", "Ratodero", "Dokri", "Bakrani", "Kamber"]
+    },
+    "Balochistan": {
+      "Nasirabad Division": ["Nasirabad", "Dera Murad Jamali", "Tamboo", "Chatter"],
+      "Jafarabad Division": ["Dera Allah Yar", "Gandakha", "Usta Muhammad"]
+    }
+  }
+}
