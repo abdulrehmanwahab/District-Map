@@ -37,6 +37,11 @@
   </div>
 
   <div class="toggle-container">
+  <input type="checkbox" id="toggle-secondary-layer">
+  <label for="province-btn">Show Province</label>
+  </div>
+
+  <div class="toggle-container">
     <label for="color-picker">Select Dist Highlight Color:</label><br>
     <input type="color" id="color-picker" value="#ffa500" style="width:50%; margin-top:10px;">
   </div>
@@ -95,7 +100,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 var geojsonLayer = null;
 var allLayers = [];
 var cropData = null;
-
+var pakprovince = null; // declare globally
 // Add this line:
 var activeCrops = new Set();  // <-- track multiple active crops
 let activeCrop = null; // track which crop is active
@@ -144,7 +149,16 @@ document.getElementById('clear-btn').addEventListener('click', function() {
     geojsonLayer.resetStyle(layer);
   });
 });
+// Province Button 
+document.getElementById('province-btn').addEventListener('change', function() {
+  if (this.checked) {
+    if (pakprovince) pakrpovince.addTo(map);
+  } else {
+    if (pakprovince) map.removeLayer(pakprovince);
+  }
+});
 
+  
 /* ==== Styles ==== */
 function defaultStyle(feature) {
   return {
@@ -227,6 +241,27 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
   map.fitBounds(geojsonLayer.getBounds());
   buildSidebar(data);
 
+// ==== Load Province Map ====
+fetch('pak_boundry.geojson')
+  .then(r => r.json())
+  .then(data => {
+    pakprovince = L.geoJSON(data, {
+      style: {
+        fillOpacity: 0,       // no fill
+        color: "#000000",     // black border
+        weight: 3,            // thick line
+        opacity: 1             // fully visible
+      },
+      onEachFeature: function(feature, layer) {
+        if (feature.properties && feature.properties.name) {
+          layer.bindTooltip(feature.properties.name);
+        }
+      }
+    });
+  });
+
+
+  
   // ==== Load Crop Data ====
  fetch('crops.json')
   .then(r => r.json())
@@ -415,6 +450,7 @@ function highlightCrop(cropName) {
 </script>
 </body>
 </html>
+
 
 
 
