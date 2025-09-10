@@ -83,7 +83,7 @@
 /* ==== Global variables ==== */
 var calloutEnabled = true;
 var tooltipEnabled = true;
-var currentHighlightColor = "#ffa500"; // new districts use this color
+var currentHighlightColor = "#ffa500"; // default
 var mapColor = "#90EE90";
 var mapLineColor = "#000000";
 
@@ -95,6 +95,9 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 var geojsonLayer = null;
 var allLayers = [];
 var cropData = null;
+
+// Add this line:
+var activeCrops = new Set();  // <-- track multiple active crops
 
 
 /* ==== UI controls ==== */
@@ -394,6 +397,7 @@ function highlightCrop(cropName) {
 </script>
 </body>
 </html>
+
 
 
 
