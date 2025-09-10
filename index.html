@@ -37,8 +37,8 @@
   </div>
 
   <div class="toggle-container">
-  <input type="checkbox" id=""province-btn">
-  <label for="province-btn">Show Province</label>
+    <input type="checkbox" id="province-btn">
+    <label for="province-btn">Show Province</label>
   </div>
 
   <div class="toggle-container">
@@ -131,7 +131,7 @@ document.getElementById('toggle-tooltip').addEventListener('change', function() 
 // Province Button 
 document.getElementById('province-btn').addEventListener('change', function() {
   if (this.checked) {
-    if (pakprovince) pakrpovince.addTo(map);
+    if (pakprovince) pakprovince.addTo(map);  // fixed variable name
   } else {
     if (pakprovince) map.removeLayer(pakprovince);
   }
@@ -187,17 +187,17 @@ function toggleHighlight(layer) {
     if (!tooltipEnabled) layer.closeTooltip();
   } else {
     layer._isHighlighted = true;
-    layer._highlightColor = currentHighlightColor; // assign chosen color at time of click
+    layer._highlightColor = currentHighlightColor;
     layer.setStyle({
       fillColor: layer._highlightColor,
       color: mapLineColor,
-      weight: 2,
+      weight: 3,       // slightly thicker border
       fillOpacity: 0.75
     });
+    layer.bringToFront();  // <-- ensures highlight appears above all layers
     if (tooltipEnabled) layer.openTooltip();
   }
 }
-
 /* ==== Load GeoJSON ==== */
 fetch('geoBoundaries-PAK-ADM3.geojson')
 .then(r => r.json())
@@ -451,6 +451,7 @@ function highlightCrop(cropName) {
 </script>
 </body>
 </html>
+
 
 
 
