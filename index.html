@@ -82,6 +82,8 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 var geojsonLayer = null;
 var allLayers = [];
+var cropData = null;
+
 
 /* ==== UI controls ==== */
 document.getElementById('toggle-callout').addEventListener('change', function() {
@@ -209,6 +211,16 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
 
   map.fitBounds(geojsonLayer.getBounds());
   buildSidebar(data);
+
+  // ==== Load Crop Data ====
+ fetch('crops.json')
+  .then(r => r.json())
+  .then(data => {
+    cropData = data;
+    console.log("✅ Crop data loaded", cropData);
+  })
+  .catch(err => console.error("❌ Error loading crop data:", err));
+  
 });
 
 /* ==== Sidebar ==== */
@@ -243,10 +255,56 @@ function highlightDistrict(name) {
   geojsonLayer.eachLayer(layer => {
     if (layer.feature.properties.shapeName === name) toggleHighlight(layer);
   });
+
+function highlightCrop(cropName) {
+  if (!cropData || !cropData[cropName]) {
+    console.warn("⚠️ Crop not found:", cropName);
+    return;
+  }
+
+  // Reset previous highlights
+  geojsonLayer.eachLayer(layer => {
+    layer._isHighlighted = false;
+    delete layer._highlightColor;
+    geojsonLayer.resetStyle(layer);
+  });
+
+  // Iterate crop divisions and districts
+  Object.values(cropData[cropName]).forEach(provinceObj => {
+    Object.values(provinceObj).forEach(districtList => {
+      districtList.forEach(districtName => {
+        geojsonLayer.eachLayer(layer => {
+          if (layer.feature.properties.shapeName &&
+              layer.feature.properties.shapeName.toLowerCase() === districtName.toLowerCase()) {
+            
+            layer._isHighlighted = true;
+            layer._highlightColor = currentHighlightColor;
+            layer.setStyle({
+              fillColor: layer._highlightColor,
+              color: mapLineColor,
+              weight: 2,
+              fillOpacity: 0.75
+            });
+          }
+        });
+      });
+    });
+  });
+
+  console.log("🌾 Highlighted crop:", cropName);
+}
+
+  // ==== Crop Buttons ====
+document.getElementById('btn1').addEventListener('click', function() { highlightCrop("cotton"); });
+document.getElementById('btn2').addEventListener('click', function() { highlightCrop("rice"); });
+document.getElementById('btn3').addEventListener('click', function() { highlightCrop("sesame_seed"); });
+document.getElementById('btn4').addEventListener('click', function() { highlightCrop("wheat"); });
+
 }
 </script>
 </body>
 </html>
+
 
 
 
