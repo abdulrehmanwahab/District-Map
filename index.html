@@ -137,6 +137,28 @@ document.getElementById('clear-btn').addEventListener('click', function() {
   clearHighlights();
 });
 
+/* ==== Highlight a layer ==== */
+function toggleHighlight(layer) {
+  if (layer._isHighlighted) {
+    layer._isHighlighted = false;
+    delete layer._highlightColor;
+    geojsonLayer.resetStyle(layer);
+    if (!tooltipEnabled) layer.closeTooltip();
+  } else {
+    layer._isHighlighted = true;
+    layer._highlightColor = currentHighlightColor;
+    layer.setStyle({
+      fillColor: layer._highlightColor,
+      color: mapLineColor,
+      weight: 3,
+      fillOpacity: 0.75
+    });
+    layer.bringToFront();
+    if (tooltipEnabled) layer.openTooltip();
+  }
+}
+
+  
 /* ==== Load ADM3 GeoJSON ==== */
 fetch('geoBoundaries-PAK-ADM3.geojson')
 .then(r => r.json())
@@ -218,6 +240,8 @@ function defaultStyle(feature) {
 function showInfo(name) { document.getElementById('info-box').innerHTML = "<b>Selected Tehsil:</b> " + name; }
 function clearInfo() { document.getElementById('info-box').innerHTML = "Hover over a tehsil or click to see details here"; }
 
+
+  
 /* ==== Highlight Functions ==== */
 function toggleCrop(cropName) {
   if (!cropData) {
@@ -352,6 +376,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
