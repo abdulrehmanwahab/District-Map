@@ -121,11 +121,14 @@ document.getElementById('toggle-tooltip').addEventListener('change', function() 
 
 // Province toggle
 document.getElementById('province-btn').addEventListener('change', function() {
-  if (this.checked && pakprovince) {
-    pakprovince.addTo(map);
-    pakprovince.bringToBack();
-  } else if (pakprovince) map.removeLayer(pakprovince);
-});
+      if (this.checked) {
+        pakprovince.addTo(map);
+        pakprovince.bringToBack();
+      } else {
+        if (pakprovince) map.removeLayer(pakprovince);
+      }
+    });
+  });
 
 document.getElementById('color-picker').addEventListener('input', function() {
   currentHighlightColor = this.value;
@@ -178,25 +181,24 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
 
   // ==== Load Province Layer ====
   fetch('geoBoundaries-PAK-ADM1.geojson')
-    .then(r => r.json())
-    .then(data => {
-      pakprovince = L.geoJSON(data, {
-        style: {
-        fillColor: mapColor, // same as map background
-        fillOpacity: 1,      // fully filled
-        color: "#000000",    // black borders
+  .then(r => r.json())
+  .then(data => {
+    pakprovince = L.geoJSON(data, {
+      style: {
+        fillColor: 'transparent', // transparent inside
+        fillOpacity: 0,           // fully see-through
+        color: "#000000",         // black borders visible
         weight: 3,
         opacity: 1
-        },
-        interactive: false,
-        onEachFeature: function(feature, layer) {
-          if (feature.properties && feature.properties.name) {
-            layer.bindTooltip(feature.properties.name);
-          }
+      },
+      interactive: false,         // allow clicks to pass through
+      onEachFeature: function(feature, layer) {
+        if (feature.properties && feature.properties.name) {
+          layer.bindTooltip(feature.properties.name);
         }
-      }).addTo(map);
-      pakprovince.bringToBack();
+      }
     });
+    
 
   // ==== Load Crop Data ====
   fetch('crops.json')
@@ -362,5 +364,6 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
