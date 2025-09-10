@@ -56,11 +56,23 @@
   </div>
 
   <div class="toggle-container">
-    <button id="btn1" style="width:40%;">Cotton</button>
-    <button id="btn2" style="width:40%;">Rice</button>
-    <button id="btn3" style="width:40%;">Sesame</button>
-    <button id="btn4" style="width:40%;">Wheat</button>
+  <div style="display:flex; align-items:center; margin-bottom:5px;">
+    <button id="btn1" style="flex:1;">Cotton</button>
+    <input type="color" id="color-cotton" value="#ffa500" style="margin-left:5px; width:30px; height:30px;">
   </div>
+  <div style="display:flex; align-items:center; margin-bottom:5px;">
+    <button id="btn2" style="flex:1;">Rice</button>
+    <input type="color" id="color-rice" value="#90EE90" style="margin-left:5px; width:30px; height:30px;">
+  </div>
+  <div style="display:flex; align-items:center; margin-bottom:5px;">
+    <button id="btn3" style="flex:1;">Sesame</button>
+    <input type="color" id="color-sesame_seed" value="#87CEEB" style="margin-left:5px; width:30px; height:30px;">
+  </div>
+  <div style="display:flex; align-items:center; margin-bottom:5px;">
+    <button id="btn4" style="flex:1;">Wheat</button>
+    <input type="color" id="color-wheat" value="#F08080" style="margin-left:5px; width:30px; height:30px;">
+  </div>
+ </div>
 </div>
 
 <div id="map">
@@ -339,6 +351,40 @@ function removeCropHighlight(cropName) {
   });
 }
 
+function getCropColor(cropName) {
+  let inputId = "color-" + cropName;
+  let input = document.getElementById(inputId);
+  return input ? input.value : "#ffa500"; // fallback color
+}
+
+// Update highlightCrop to use this color
+function highlightCrop(cropName) {
+  if (!cropData || !cropData[cropName]) return;
+
+  Object.values(cropData[cropName]).forEach(provinceObj => {
+    Object.values(provinceObj).forEach(districtList => {
+      districtList.forEach(districtName => {
+        geojsonLayer.eachLayer(layer => {
+          if (layer.feature.properties.shapeName &&
+              layer.feature.properties.shapeName.toLowerCase() === districtName.toLowerCase()) {
+
+            layer._isHighlighted = true;
+            layer._highlightColor = getCropColor(cropName);
+            layer.setStyle({
+              fillColor: layer._highlightColor,
+              color: mapLineColor,
+              weight: 2,
+              fillOpacity: 0.75
+            });
+          }
+        });
+      });
+    });
+  });
+
+  console.log("🌾 Highlighted crop:", cropName);
+}
+  
   // Button event bindings
   document.getElementById('btn1').addEventListener('click', function() { toggleCrop("cotton");  });
   document.getElementById('btn2').addEventListener('click', function() { toggleCrop("rice");  });
@@ -348,6 +394,7 @@ function removeCropHighlight(cropName) {
 </script>
 </body>
 </html>
+
 
 
 
