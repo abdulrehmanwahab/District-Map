@@ -98,7 +98,7 @@ var cropData = null;
 
 // Add this line:
 var activeCrops = new Set();  // <-- track multiple active crops
-
+let activeCrop = null; // track which crop is active
 
 /* ==== UI controls ==== */
 document.getElementById('toggle-callout').addEventListener('change', function() {
@@ -311,7 +311,7 @@ function highlightCrop(cropName) {
   console.log("🌾 Highlighted crop:", cropName);
 }
 
-let activeCrop = null; // track which crop is active
+
 
  function clearHighlights() {
   geojsonLayer.eachLayer(layer => {
@@ -324,7 +324,7 @@ let activeCrop = null; // track which crop is active
 
   function toggleCrop(cropName) {
   if (activeCrops.has(cropName)) {
-    // Remove this crop
+    // Crop is already active → remove its highlight
     removeCropHighlight(cropName);
     activeCrops.delete(cropName);
     console.log("❌ Removed highlights for", cropName);
@@ -335,24 +335,42 @@ let activeCrop = null; // track which crop is active
     console.log("✅ Highlighted", cropName);
   }
 }
-
 function removeCropHighlight(cropName) {
   if (!cropData || !cropData[cropName]) return;
+
   Object.values(cropData[cropName]).forEach(provinceObj => {
     Object.values(provinceObj).forEach(districtList => {
       districtList.forEach(districtName => {
         geojsonLayer.eachLayer(layer => {
           if (layer.feature.properties.shapeName &&
               layer.feature.properties.shapeName.toLowerCase() === districtName.toLowerCase()) {
-            layer._isHighlighted = false;
-            delete layer._highlightColor;
-            geojsonLayer.resetStyle(layer);
+
+            // Check if this district is part of **other active crops**
+            let stillActive = false;
+            activeCrops.forEach(otherCrop => {
+              if (otherCrop !== cropName && cropData[otherCrop]) {
+                Object.values(cropData[otherCrop]).forEach(provObj => {
+                  Object.values(provObj).forEach(dList => {
+                    if (dList.some(d => d.toLowerCase() === districtName.toLowerCase())) {
+                      stillActive = true;
+                    }
+                  });
+                });
+              }
+            });
+
+            if (!stillActive) {
+              layer._isHighlighted = false;
+              delete layer._highlightColor;
+              geojsonLayer.resetStyle(layer);
+            }
           }
         });
       });
     });
   });
 }
+
 
 function getCropColor(cropName) {
   let inputId = "color-" + cropName;
@@ -397,6 +415,7 @@ function highlightCrop(cropName) {
 </script>
 </body>
 </html>
+
 
 
 
