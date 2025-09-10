@@ -298,28 +298,29 @@ function highlightCrop(cropName) {
 
 let activeCrop = null; // track which crop is active
 
-  function clearHighlights() {
-    allLayers.forEach(layer => {
-      if (layer.setStyle) {
-        layer.setStyle({ fillColor: '', fillOpacity: 0.2, color: '#3388ff' });
-      }
-    });
-  }
+ function clearHighlights() {
+  geojsonLayer.eachLayer(layer => {
+    layer._isHighlighted = false;
+    delete layer._highlightColor;
+    geojsonLayer.resetStyle(layer); // back to default
+  });
+}
+
 
   function toggleCrop(cropName) {
-    if (activeCrop === cropName) {
-      // If same crop clicked again → turn off
-      clearHighlights();
-      activeCrop = null;
-      console.log("❌ Cleared highlights for", cropName);
-    } else {
-      // New crop → clear old and highlight new
-      clearHighlights();
-      highlightCrop(cropName);
-      activeCrop = cropName;
-      console.log("✅ Highlighted", cropName);
-    }
+  if (activeCrop === cropName) {
+    // If same crop clicked again → clear
+    clearHighlights();
+    activeCrop = null;
+    console.log("❌ Cleared highlights for", cropName);
+  } else {
+    // Clear old, highlight new
+    clearHighlights();
+    highlightCrop(cropName);
+    activeCrop = cropName;
+    console.log("✅ Highlighted", cropName);
   }
+}
 
   // Button event bindings
   document.getElementById('btn1').addEventListener('click', function() { toggleCrop("cotton");  });
@@ -330,6 +331,7 @@ let activeCrop = null; // track which crop is active
 </script>
 </body>
 </html>
+
 
 
 
