@@ -160,44 +160,7 @@ document.getElementById('clear-btn').addEventListener('click', function() {
 });
 
   
-/* ==== Styles ==== */
-function defaultStyle(feature) {
-  return {
-    fillColor: feature._highlightColor || mapColor,
-    color: mapLineColor,
-    weight: feature._isHighlighted ? 2 : 1,
-    fillOpacity: feature._isHighlighted ? 0.75 : 0.8
-  };
-}
 
-/* ==== Info box ==== */
-function showInfo(name) {
-  document.getElementById('info-box').innerHTML = "<b>Selected Tehsil:</b> " + name;
-}
-function clearInfo() {
-  document.getElementById('info-box').innerHTML = "Hover over a tehsil or click to see details here";
-}
-
-/* ==== Toggle highlight ==== */
-function toggleHighlight(layer) {
-  if (layer._isHighlighted) {
-    layer._isHighlighted = false;
-    delete layer._highlightColor;
-    geojsonLayer.resetStyle(layer);
-    if (!tooltipEnabled) layer.closeTooltip();
-  } else {
-    layer._isHighlighted = true;
-    layer._highlightColor = currentHighlightColor;
-    layer.setStyle({
-      fillColor: layer._highlightColor,
-      color: mapLineColor,
-      weight: 3,       // slightly thicker border
-      fillOpacity: 0.75
-    });
-    layer.bringToFront();  // <-- ensures highlight appears above all layers
-    if (tooltipEnabled) layer.openTooltip();
-  }
-}
 /* ==== Load GeoJSON ==== */
 fetch('geoBoundaries-PAK-ADM3.geojson')
 .then(r => r.json())
@@ -261,8 +224,7 @@ fetch('pak_boundry.geojson')
     });
   });
 
-
-  
+ 
   // ==== Load Crop Data ====
  fetch('crops.json')
   .then(r => r.json())
@@ -274,6 +236,45 @@ fetch('pak_boundry.geojson')
   
 });
 
+/* ==== Styles ==== */
+function defaultStyle(feature) {
+  return {
+    fillColor: feature._highlightColor || mapColor,
+    color: mapLineColor,
+    weight: feature._isHighlighted ? 2 : 1,
+    fillOpacity: feature._isHighlighted ? 0.75 : 0.8
+  };
+}
+
+/* ==== Info box ==== */
+function showInfo(name) {
+  document.getElementById('info-box').innerHTML = "<b>Selected Tehsil:</b> " + name;
+}
+function clearInfo() {
+  document.getElementById('info-box').innerHTML = "Hover over a tehsil or click to see details here";
+}
+
+/* ==== Toggle highlight ==== */
+function toggleHighlight(layer) {
+  if (layer._isHighlighted) {
+    layer._isHighlighted = false;
+    delete layer._highlightColor;
+    geojsonLayer.resetStyle(layer);
+    if (!tooltipEnabled) layer.closeTooltip();
+  } else {
+    layer._isHighlighted = true;
+    layer._highlightColor = currentHighlightColor;
+    layer.setStyle({
+      fillColor: layer._highlightColor,
+      color: mapLineColor,
+      weight: 3,       // slightly thicker border
+      fillOpacity: 0.75
+    });
+    layer.bringToFront();  // <-- ensures highlight appears above all layers
+    if (tooltipEnabled) layer.openTooltip();
+  }
+}
+  
 /* ==== Sidebar ==== */
 function buildSidebar(data) {
   let sidebar = document.getElementById('sidebar');
@@ -308,45 +309,47 @@ function highlightDistrict(name) {
   });
 }
 
+// Get the color assigned to a crop
+function getCropColor(cropName) {
+  let inputId = "color-" + cropName;
+  let input = document.getElementById(inputId);
+  return input ? input.value : "#ffa500"; // fallback
+}
+  
 // ==== Highlight Crop ====
 function highlightCrop(cropName) {
-  if (!cropData || !cropData[cropName]) {
-    console.warn("⚠️ Crop not found:", cropName);
-    return;
-  }
+  if (!cropData || !cropData[cropName]) return;
 
-  // Reset previous highlights
-  geojsonLayer.eachLayer(layer => {
-    layer._isHighlighted = false;
-    delete layer._highlightColor;
-    geojsonLayer.resetStyle(layer);
-  });
-
-  // Iterate crop divisions and districts
   Object.values(cropData[cropName]).forEach(provinceObj => {
     Object.values(provinceObj).forEach(districtList => {
       districtList.forEach(districtName => {
         geojsonLayer.eachLayer(layer => {
           if (layer.feature.properties.shapeName &&
               layer.feature.properties.shapeName.toLowerCase() === districtName.toLowerCase()) {
-            
+
+            // If this district is already highlighted by another crop, keep previous color blended
+            layer._highlightBy = layer._highlightBy || {};
+            layer._highlightBy[cropName] = getCropColor(cropName);
+
+            // Blend colors (for simplicity, just take last one; can improve later)
+            let lastColor = Object.values(layer._highlightBy).slice(-1)[0];
+
             layer._isHighlighted = true;
-            layer._highlightColor = currentHighlightColor;
+            layer._highlightColor = lastColor;
             layer.setStyle({
-              fillColor: layer._highlightColor,
+              fillColor: lastColor,
               color: mapLineColor,
               weight: 2,
               fillOpacity: 0.75
             });
+
+            layer.bringToFront(); // ensure ADM3 highlights are above province
           }
         });
       });
     });
   });
-
-  console.log("🌾 Highlighted crop:", cropName);
 }
-
 
 
  function clearHighlights() {
@@ -358,19 +361,20 @@ function highlightCrop(cropName) {
 }
 
 
-  function toggleCrop(cropName) {
+// Toggle a crop
+function toggleCrop(cropName) {
   if (activeCrops.has(cropName)) {
-    // Crop is already active → remove its highlight
     removeCropHighlight(cropName);
     activeCrops.delete(cropName);
     console.log("❌ Removed highlights for", cropName);
   } else {
-    // Add this crop
     highlightCrop(cropName);
     activeCrops.add(cropName);
     console.log("✅ Highlighted", cropName);
   }
 }
+
+ // Remove highlights of a crop
 function removeCropHighlight(cropName) {
   if (!cropData || !cropData[cropName]) return;
 
@@ -381,21 +385,16 @@ function removeCropHighlight(cropName) {
           if (layer.feature.properties.shapeName &&
               layer.feature.properties.shapeName.toLowerCase() === districtName.toLowerCase()) {
 
-            // Check if this district is part of **other active crops**
-            let stillActive = false;
-            activeCrops.forEach(otherCrop => {
-              if (otherCrop !== cropName && cropData[otherCrop]) {
-                Object.values(cropData[otherCrop]).forEach(provObj => {
-                  Object.values(provObj).forEach(dList => {
-                    if (dList.some(d => d.toLowerCase() === districtName.toLowerCase())) {
-                      stillActive = true;
-                    }
-                  });
-                });
-              }
-            });
+            if (layer._highlightBy) {
+              delete layer._highlightBy[cropName];
+            }
 
-            if (!stillActive) {
+            // If still other crops active, pick last one
+            if (layer._highlightBy && Object.keys(layer._highlightBy).length > 0) {
+              let lastColor = Object.values(layer._highlightBy).slice(-1)[0];
+              layer._highlightColor = lastColor;
+              layer.setStyle({ fillColor: lastColor, color: mapLineColor, weight:2, fillOpacity:0.75 });
+            } else {
               layer._isHighlighted = false;
               delete layer._highlightColor;
               geojsonLayer.resetStyle(layer);
@@ -406,7 +405,6 @@ function removeCropHighlight(cropName) {
     });
   });
 }
-
 
 function getCropColor(cropName) {
   let inputId = "color-" + cropName;
@@ -451,6 +449,7 @@ function highlightCrop(cropName) {
 </script>
 </body>
 </html>
+
 
 
 
