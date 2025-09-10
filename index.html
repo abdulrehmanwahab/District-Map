@@ -308,18 +308,35 @@ let activeCrop = null; // track which crop is active
 
 
   function toggleCrop(cropName) {
-  if (activeCrop === cropName) {
-    // If same crop clicked again → clear
-    clearHighlights();
-    activeCrop = null;
-    console.log("❌ Cleared highlights for", cropName);
+  if (activeCrops.has(cropName)) {
+    // Remove this crop
+    removeCropHighlight(cropName);
+    activeCrops.delete(cropName);
+    console.log("❌ Removed highlights for", cropName);
   } else {
-    // Clear old, highlight new
-    clearHighlights();
+    // Add this crop
     highlightCrop(cropName);
-    activeCrop = cropName;
+    activeCrops.add(cropName);
     console.log("✅ Highlighted", cropName);
   }
+}
+
+function removeCropHighlight(cropName) {
+  if (!cropData || !cropData[cropName]) return;
+  Object.values(cropData[cropName]).forEach(provinceObj => {
+    Object.values(provinceObj).forEach(districtList => {
+      districtList.forEach(districtName => {
+        geojsonLayer.eachLayer(layer => {
+          if (layer.feature.properties.shapeName &&
+              layer.feature.properties.shapeName.toLowerCase() === districtName.toLowerCase()) {
+            layer._isHighlighted = false;
+            delete layer._highlightColor;
+            geojsonLayer.resetStyle(layer);
+          }
+        });
+      });
+    });
+  });
 }
 
   // Button event bindings
@@ -331,6 +348,7 @@ let activeCrop = null; // track which crop is active
 </script>
 </body>
 </html>
+
 
 
 
