@@ -182,10 +182,11 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
     .then(data => {
       pakprovince = L.geoJSON(data, {
         style: {
-          fillOpacity: 1,
-          color: "#000000",
-          weight: 3,
-          opacity: 1
+        fillColor: mapColor, // same as map background
+        fillOpacity: 1,      // fully filled
+        color: "#000000",    // black borders
+        weight: 3,
+        opacity: 1
         },
         interactive: false,
         onEachFeature: function(feature, layer) {
@@ -361,4 +362,5 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
