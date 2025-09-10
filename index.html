@@ -131,7 +131,10 @@ document.getElementById('toggle-tooltip').addEventListener('change', function() 
 // Province Button 
 document.getElementById('province-btn').addEventListener('change', function() {
   if (this.checked) {
-    if (pakprovince) pakprovince.addTo(map);  // fixed variable name
+    if (pakprovince) {
+      pakprovince.addTo(map);
+      pakprovince.bringToBack();
+    }
   } else {
     if (pakprovince) map.removeLayer(pakprovince);
   }
@@ -210,20 +213,21 @@ fetch('pak_boundry.geojson')
   .then(r => r.json())
   .then(data => {
     pakprovince = L.geoJSON(data, {
-      style: {
-        fillOpacity: 0,       // no fill
-        color: "#000000",     // black border
-        weight: 3,            // thick line
-        opacity: 1             // fully visible
-      },
-      onEachFeature: function(feature, layer) {
-        if (feature.properties && feature.properties.name) {
-          layer.bindTooltip(feature.properties.name);
-        }
-      }
-    });
-  });
+  style: {
+    fillOpacity: 0,    // no fill
+    color: "#000000",  // black border
+    weight: 3,
+    opacity: 1
+  },
+  interactive: false, // <- prevents this layer from capturing clicks
+  onEachFeature: function(feature, layer) {
+    if (feature.properties && feature.properties.name) {
+      layer.bindTooltip(feature.properties.name);
+    }
+  }
+}).addTo(map);      // <-- add to map first
 
+pakprovince.bringToBack(); // <-- immediately after addTo(map)
  
   // ==== Load Crop Data ====
  fetch('crops.json')
@@ -313,10 +317,10 @@ function highlightDistrict(name) {
 function getCropColor(cropName) {
   let inputId = "color-" + cropName;
   let input = document.getElementById(inputId);
-  return input ? input.value : "#ffa500"; // fallback
+  return input ? input.value : "#ffa500"; // fallback color
 }
 
-// ==== Highlight Crop ====
+// Highlight districts of a crop
 function highlightCrop(cropName) {
   if (!cropData || !cropData[cropName]) return;
 
@@ -327,13 +331,11 @@ function highlightCrop(cropName) {
           if (layer.feature.properties.shapeName &&
               layer.feature.properties.shapeName.toLowerCase() === districtName.toLowerCase()) {
 
-            // If this district is already highlighted by another crop, keep previous color blended
             layer._highlightBy = layer._highlightBy || {};
             layer._highlightBy[cropName] = getCropColor(cropName);
 
-            // Blend colors (for simplicity, just take last one; can improve later)
+            // Show the last-added crop color
             let lastColor = Object.values(layer._highlightBy).slice(-1)[0];
-
             layer._isHighlighted = true;
             layer._highlightColor = lastColor;
             layer.setStyle({
@@ -343,7 +345,7 @@ function highlightCrop(cropName) {
               fillOpacity: 0.75
             });
 
-            layer.bringToFront(); // ensure ADM3 highlights are above province
+            layer.bringToFront(); // keep above province
           }
         });
       });
@@ -351,7 +353,7 @@ function highlightCrop(cropName) {
   });
 }
 
- // Remove highlights of a crop
+// Remove highlights of a crop
 function removeCropHighlight(cropName) {
   if (!cropData || !cropData[cropName]) return;
 
@@ -362,16 +364,15 @@ function removeCropHighlight(cropName) {
           if (layer.feature.properties.shapeName &&
               layer.feature.properties.shapeName.toLowerCase() === districtName.toLowerCase()) {
 
-            if (layer._highlightBy) {
-              delete layer._highlightBy[cropName];
-            }
+            if (layer._highlightBy) delete layer._highlightBy[cropName];
 
-            // If still other crops active, pick last one
             if (layer._highlightBy && Object.keys(layer._highlightBy).length > 0) {
+              // Keep color of remaining active crops
               let lastColor = Object.values(layer._highlightBy).slice(-1)[0];
               layer._highlightColor = lastColor;
               layer.setStyle({ fillColor: lastColor, color: mapLineColor, weight:2, fillOpacity:0.75 });
             } else {
+              // No more active crops → reset
               layer._isHighlighted = false;
               delete layer._highlightColor;
               geojsonLayer.resetStyle(layer);
@@ -382,7 +383,7 @@ function removeCropHighlight(cropName) {
     });
   });
 }
-  
+
 // Toggle a crop
 function toggleCrop(cropName) {
   if (activeCrops.has(cropName)) {
@@ -393,6 +394,17 @@ function toggleCrop(cropName) {
     highlightCrop(cropName);
     activeCrops.add(cropName);
     console.log("✅ Highlighted", cropName);
+  }
+
+  // If no crop buttons are active, clear all highlights
+  if (activeCrops.size === 0) {
+    geojsonLayer.eachLayer(layer => {
+      layer._isHighlighted = false;
+      delete layer._highlightColor;
+      delete layer._highlightBy;
+      geojsonLayer.resetStyle(layer);
+    });
+    console.log("🧹 All highlights cleared (no crop active)");
   }
 }
   
@@ -419,6 +431,7 @@ function toggleCrop(cropName) {
 </script>
 </body>
 </html>
+
 
 
 
