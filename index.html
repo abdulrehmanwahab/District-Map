@@ -88,7 +88,7 @@
 /* ==== Global variables ==== */
 var calloutEnabled = true;
 var tooltipEnabled = true;
-var currentHighlightColor = "#ffa500"; // default
+var currentHighlightColor = "#ffa500"; 
 var mapColor = "#90EE90";
 var mapLineColor = "#000000";
 
@@ -100,10 +100,8 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 var geojsonLayer = null;
 var allLayers = [];
 var cropData = null;
-var pakprovince = null; // declare globally
-// Add this line:
-var activeCrops = new Set();  // <-- track multiple active crops
-let activeCrop = null; // track which crop is active
+var pakprovince = null;
+var activeCrops = new Set();
 
 /* ==== UI controls ==== */
 document.getElementById('toggle-callout').addEventListener('change', function() {
@@ -113,31 +111,20 @@ document.getElementById('toggle-callout').addEventListener('change', function() 
 
 document.getElementById('toggle-tooltip').addEventListener('change', function() {
   tooltipEnabled = this.checked;
-  if (!tooltipEnabled) {
-    allLayers.forEach(layer => {
-      if (layer.getTooltip()) {
-        layer.unbindTooltip(); // completely remove the tooltip
-      }
-    });
-  } else {
-    allLayers.forEach(layer => {
-      if (!layer.getTooltip() && layer.feature.properties.shapeName) {
-        layer.bindTooltip(layer.feature.properties.shapeName, { permanent: false });
-      }
-    });
-  }
+  allLayers.forEach(layer => {
+    if (!tooltipEnabled && layer.getTooltip()) layer.unbindTooltip();
+    else if (tooltipEnabled && !layer.getTooltip() && layer.feature.properties.shapeName) {
+      layer.bindTooltip(layer.feature.properties.shapeName, { permanent: false });
+    }
+  });
 });
 
-// Province Button 
+// Province toggle
 document.getElementById('province-btn').addEventListener('change', function() {
-  if (this.checked) {
-    if (pakprovince) {
-      pakprovince.addTo(map);
-      pakprovince.bringToBack();
-    }
-  } else {
-    if (pakprovince) map.removeLayer(pakprovince);
-  }
+  if (this.checked && pakprovince) {
+    pakprovince.addTo(map);
+    pakprovince.bringToBack();
+  } else if (pakprovince) map.removeLayer(pakprovince);
 });
 
 document.getElementById('color-picker').addEventListener('input', function() {
@@ -154,17 +141,11 @@ document.getElementById('color-picker-map-line').addEventListener('input', funct
   if (geojsonLayer) geojsonLayer.setStyle(defaultStyle);
 });
 
-// Clear button -> reset all selections
 document.getElementById('clear-btn').addEventListener('click', function() {
-  geojsonLayer.eachLayer(layer => {
-    layer._isHighlighted = false;
-    geojsonLayer.resetStyle(layer);
-  });
+  clearHighlights();
 });
 
-  
-
-/* ==== Load GeoJSON ==== */
+/* ==== Load ADM3 GeoJSON ==== */
 fetch('geoBoundaries-PAK-ADM3.geojson')
 .then(r => r.json())
 .then(data => {
@@ -175,25 +156,11 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
       if (feature.properties && feature.properties.shapeName) {
         layer.bindTooltip(feature.properties.shapeName, {permanent: false});
 
-       layer.on('mouseover', function() {
-        console.log(
-          "Mouseover:", feature.properties.shapeName, 
-          "tooltipEnabled =", tooltipEnabled,
-          "hasTooltip =", !!layer.getTooltip()
-        );
-         if (calloutEnabled) {
-          showInfo(feature.properties.shapeName);
-          }
-        if (tooltipEnabled) {
-          console.log("➡️ Opening tooltip for", feature.properties.shapeName);
-          layer.openTooltip();
-        } else {
-          console.log("❌ Tooltip disabled, should NOT open");
-        }
-      });
-
+        layer.on('mouseover', function() {
+          if (calloutEnabled) showInfo(feature.properties.shapeName);
+          if (tooltipEnabled) layer.openTooltip();
+        });
         layer.on('mouseout', function() {
-          console.log("Mouseover:", feature.properties.shapeName, "tooltipEnabled =", tooltipEnabled);
           if (calloutEnabled) clearInfo();
           if (tooltipEnabled) layer.closeTooltip();
         });
@@ -206,38 +173,34 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
   }).addTo(map);
 
   map.fitBounds(geojsonLayer.getBounds());
+
   buildSidebar(data);
 
-// ==== Load Province Map ====
-fetch('pak_boundry.geojson')
-  .then(r => r.json())
-  .then(data => {
-    pakprovince = L.geoJSON(data, {
-  style: {
-    fillOpacity: 0,    // no fill
-    color: "#000000",  // black border
-    weight: 3,
-    opacity: 1
-  },
-  interactive: false, // <- prevents this layer from capturing clicks
-  onEachFeature: function(feature, layer) {
-    if (feature.properties && feature.properties.name) {
-      layer.bindTooltip(feature.properties.name);
-    }
-  }
-}).addTo(map);      // <-- add to map first
+  // ==== Load Province Layer ====
+  fetch('geoBoundaries-PAK-ADM1.geojson')
+    .then(r => r.json())
+    .then(data => {
+      pakprovince = L.geoJSON(data, {
+        style: {
+          fillOpacity: 0,
+          color: "#000000",
+          weight: 3,
+          opacity: 1
+        },
+        interactive: false,
+        onEachFeature: function(feature, layer) {
+          if (feature.properties && feature.properties.name) {
+            layer.bindTooltip(feature.properties.name);
+          }
+        }
+      }).addTo(map);
+      pakprovince.bringToBack();
+    });
 
-pakprovince.bringToBack(); // <-- immediately after addTo(map)
- 
   // ==== Load Crop Data ====
- fetch('crops.json')
-  .then(r => r.json())
-  .then(data => {
-    cropData = data;
-    console.log("✅ Crop data loaded", cropData);
-  })
-  .catch(err => console.error("❌ Error loading crop data:", err));
-  
+  fetch('crops.json')
+    .then(r => r.json())
+    .then(data => cropData = data);
 });
 
 /* ==== Styles ==== */
@@ -250,15 +213,11 @@ function defaultStyle(feature) {
   };
 }
 
-/* ==== Info box ==== */
-function showInfo(name) {
-  document.getElementById('info-box').innerHTML = "<b>Selected Tehsil:</b> " + name;
-}
-function clearInfo() {
-  document.getElementById('info-box').innerHTML = "Hover over a tehsil or click to see details here";
-}
+/* ==== Info Box ==== */
+function showInfo(name) { document.getElementById('info-box').innerHTML = "<b>Selected Tehsil:</b> " + name; }
+function clearInfo() { document.getElementById('info-box').innerHTML = "Hover over a tehsil or click to see details here"; }
 
-/* ==== Toggle highlight ==== */
+/* ==== Highlight Functions ==== */
 function toggleHighlight(layer) {
   if (layer._isHighlighted) {
     layer._isHighlighted = false;
@@ -271,14 +230,23 @@ function toggleHighlight(layer) {
     layer.setStyle({
       fillColor: layer._highlightColor,
       color: mapLineColor,
-      weight: 3,       // slightly thicker border
+      weight: 3,
       fillOpacity: 0.75
     });
-    layer.bringToFront();  // <-- ensures highlight appears above all layers
+    layer.bringToFront();
     if (tooltipEnabled) layer.openTooltip();
   }
 }
-  
+
+function clearHighlights() {
+  geojsonLayer.eachLayer(layer => {
+    layer._isHighlighted = false;
+    delete layer._highlightColor;
+    delete layer._highlightBy;
+    geojsonLayer.resetStyle(layer);
+  });
+}
+
 /* ==== Sidebar ==== */
 function buildSidebar(data) {
   let sidebar = document.getElementById('sidebar');
@@ -313,14 +281,12 @@ function highlightDistrict(name) {
   });
 }
 
-// Get the color assigned to a crop
+/* ==== Crop Highlights ==== */
 function getCropColor(cropName) {
-  let inputId = "color-" + cropName;
-  let input = document.getElementById(inputId);
-  return input ? input.value : "#ffa500"; // fallback color
+  let input = document.getElementById("color-" + cropName);
+  return input ? input.value : "#ffa500";
 }
 
-// Highlight districts of a crop
 function highlightCrop(cropName) {
   if (!cropData || !cropData[cropName]) return;
 
@@ -334,18 +300,11 @@ function highlightCrop(cropName) {
             layer._highlightBy = layer._highlightBy || {};
             layer._highlightBy[cropName] = getCropColor(cropName);
 
-            // Show the last-added crop color
             let lastColor = Object.values(layer._highlightBy).slice(-1)[0];
             layer._isHighlighted = true;
             layer._highlightColor = lastColor;
-            layer.setStyle({
-              fillColor: lastColor,
-              color: mapLineColor,
-              weight: 2,
-              fillOpacity: 0.75
-            });
-
-            layer.bringToFront(); // keep above province
+            layer.setStyle({ fillColor: lastColor, color: mapLineColor, weight: 2, fillOpacity:0.75 });
+            layer.bringToFront();
           }
         });
       });
@@ -353,7 +312,6 @@ function highlightCrop(cropName) {
   });
 }
 
-// Remove highlights of a crop
 function removeCropHighlight(cropName) {
   if (!cropData || !cropData[cropName]) return;
 
@@ -367,12 +325,10 @@ function removeCropHighlight(cropName) {
             if (layer._highlightBy) delete layer._highlightBy[cropName];
 
             if (layer._highlightBy && Object.keys(layer._highlightBy).length > 0) {
-              // Keep color of remaining active crops
               let lastColor = Object.values(layer._highlightBy).slice(-1)[0];
               layer._highlightColor = lastColor;
               layer.setStyle({ fillColor: lastColor, color: mapLineColor, weight:2, fillOpacity:0.75 });
             } else {
-              // No more active crops → reset
               layer._isHighlighted = false;
               delete layer._highlightColor;
               geojsonLayer.resetStyle(layer);
@@ -384,69 +340,19 @@ function removeCropHighlight(cropName) {
   });
 }
 
-// Toggle a crop
 function toggleCrop(cropName) {
-  if (activeCrops.has(cropName)) {
-    removeCropHighlight(cropName);
-    activeCrops.delete(cropName);
-    console.log("❌ Removed highlights for", cropName);
-  } else {
-    highlightCrop(cropName);
-    activeCrops.add(cropName);
-    console.log("✅ Highlighted", cropName);
-  }
+  if (activeCrops.has(cropName)) removeCropHighlight(cropName), activeCrops.delete(cropName);
+  else highlightCrop(cropName), activeCrops.add(cropName);
 
-  // If no crop buttons are active, clear all highlights
-  if (activeCrops.size === 0) {
-    geojsonLayer.eachLayer(layer => {
-      layer._isHighlighted = false;
-      delete layer._highlightColor;
-      delete layer._highlightBy;
-      geojsonLayer.resetStyle(layer);
-    });
-    console.log("🧹 All highlights cleared (no crop active)");
-  }
-}
-  
- function clearHighlights() {
-  geojsonLayer.eachLayer(layer => {
-    layer._isHighlighted = false;
-    delete layer._highlightColor;
-    geojsonLayer.resetStyle(layer); // back to default
-  });
+  if (activeCrops.size === 0) clearHighlights();
 }
 
-
-
-
-
-
-
-  // Button event bindings
-  document.getElementById('btn1').addEventListener('click', function() { toggleCrop("cotton");  });
-  document.getElementById('btn2').addEventListener('click', function() { toggleCrop("rice");  });
-  document.getElementById('btn3').addEventListener('click', function() { toggleCrop("sesame_seed");  });
-  document.getElementById('btn4').addEventListener('click', function() { toggleCrop("wheat");  });
+/* ==== Crop Buttons ==== */
+document.getElementById('btn1').addEventListener('click', () => toggleCrop("cotton"));
+document.getElementById('btn2').addEventListener('click', () => toggleCrop("rice"));
+document.getElementById('btn3').addEventListener('click', () => toggleCrop("sesame_seed"));
+document.getElementById('btn4').addEventListener('click', () => toggleCrop("wheat"));
 
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
