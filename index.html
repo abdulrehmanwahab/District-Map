@@ -315,7 +315,7 @@ function getCropColor(cropName) {
   let input = document.getElementById(inputId);
   return input ? input.value : "#ffa500"; // fallback
 }
-  
+
 // ==== Highlight Crop ====
 function highlightCrop(cropName) {
   if (!cropData || !cropData[cropName]) return;
@@ -351,29 +351,6 @@ function highlightCrop(cropName) {
   });
 }
 
-
- function clearHighlights() {
-  geojsonLayer.eachLayer(layer => {
-    layer._isHighlighted = false;
-    delete layer._highlightColor;
-    geojsonLayer.resetStyle(layer); // back to default
-  });
-}
-
-
-// Toggle a crop
-function toggleCrop(cropName) {
-  if (activeCrops.has(cropName)) {
-    removeCropHighlight(cropName);
-    activeCrops.delete(cropName);
-    console.log("❌ Removed highlights for", cropName);
-  } else {
-    highlightCrop(cropName);
-    activeCrops.add(cropName);
-    console.log("✅ Highlighted", cropName);
-  }
-}
-
  // Remove highlights of a crop
 function removeCropHighlight(cropName) {
   if (!cropData || !cropData[cropName]) return;
@@ -405,41 +382,34 @@ function removeCropHighlight(cropName) {
     });
   });
 }
-
-function getCropColor(cropName) {
-  let inputId = "color-" + cropName;
-  let input = document.getElementById(inputId);
-  return input ? input.value : "#ffa500"; // fallback color
-}
-
-// Update highlightCrop to use this color
-function highlightCrop(cropName) {
-  if (!cropData || !cropData[cropName]) return;
-
-  Object.values(cropData[cropName]).forEach(provinceObj => {
-    Object.values(provinceObj).forEach(districtList => {
-      districtList.forEach(districtName => {
-        geojsonLayer.eachLayer(layer => {
-          if (layer.feature.properties.shapeName &&
-              layer.feature.properties.shapeName.toLowerCase() === districtName.toLowerCase()) {
-
-            layer._isHighlighted = true;
-            layer._highlightColor = getCropColor(cropName);
-            layer.setStyle({
-              fillColor: layer._highlightColor,
-              color: mapLineColor,
-              weight: 2,
-              fillOpacity: 0.75
-            });
-          }
-        });
-      });
-    });
-  });
-
-  console.log("🌾 Highlighted crop:", cropName);
+  
+// Toggle a crop
+function toggleCrop(cropName) {
+  if (activeCrops.has(cropName)) {
+    removeCropHighlight(cropName);
+    activeCrops.delete(cropName);
+    console.log("❌ Removed highlights for", cropName);
+  } else {
+    highlightCrop(cropName);
+    activeCrops.add(cropName);
+    console.log("✅ Highlighted", cropName);
+  }
 }
   
+ function clearHighlights() {
+  geojsonLayer.eachLayer(layer => {
+    layer._isHighlighted = false;
+    delete layer._highlightColor;
+    geojsonLayer.resetStyle(layer); // back to default
+  });
+}
+
+
+
+
+
+
+
   // Button event bindings
   document.getElementById('btn1').addEventListener('click', function() { toggleCrop("cotton");  });
   document.getElementById('btn2').addEventListener('click', function() { toggleCrop("rice");  });
@@ -449,6 +419,7 @@ function highlightCrop(cropName) {
 </script>
 </body>
 </html>
+
 
 
 
