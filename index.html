@@ -67,7 +67,7 @@
   </div>
   <div style="display:flex; align-items:center; margin-bottom:5px;">
     <button id="btn2" style="flex:1;">Rice</button>
-    <input type="color" id="color-rice" value="#90EE90" style="margin-left:5px; width:30px; height:30px;">
+    <input type="color" id="color-rice" value="#e6d136" style="margin-left:5px; width:30px; height:30px;">
   </div>
   <div style="display:flex; align-items:center; margin-bottom:5px;">
     <button id="btn3" style="flex:1;">Sesame</button>
@@ -182,7 +182,7 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
     .then(data => {
       pakprovince = L.geoJSON(data, {
         style: {
-          fillOpacity: 0,
+          fillOpacity: 1,
           color: "#000000",
           weight: 3,
           opacity: 1
@@ -341,11 +341,16 @@ function removeCropHighlight(cropName) {
 }
 
 function toggleCrop(cropName) {
+  if (!cropData) {
+    console.warn("Crop data not yet loaded!");
+    return;
+  }
   if (activeCrops.has(cropName)) removeCropHighlight(cropName), activeCrops.delete(cropName);
   else highlightCrop(cropName), activeCrops.add(cropName);
 
   if (activeCrops.size === 0) clearHighlights();
 }
+
 
 /* ==== Crop Buttons ==== */
 document.getElementById('btn1').addEventListener('click', () => toggleCrop("cotton"));
@@ -356,3 +361,4 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
