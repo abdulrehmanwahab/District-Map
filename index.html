@@ -255,7 +255,9 @@ function highlightDistrict(name) {
   geojsonLayer.eachLayer(layer => {
     if (layer.feature.properties.shapeName === name) toggleHighlight(layer);
   });
+}
 
+// ==== Highlight Crop ====
 function highlightCrop(cropName) {
   if (!cropData || !cropData[cropName]) {
     console.warn("⚠️ Crop not found:", cropName);
@@ -294,16 +296,18 @@ function highlightCrop(cropName) {
   console.log("🌾 Highlighted crop:", cropName);
 }
 
-  // ==== Crop Buttons ====
+// ==== Crop Buttons ====
 document.getElementById('btn1').addEventListener('click', function() { highlightCrop("cotton"); });
 document.getElementById('btn2').addEventListener('click', function() { highlightCrop("rice"); });
 document.getElementById('btn3').addEventListener('click', function() { highlightCrop("sesame_seed"); });
 document.getElementById('btn4').addEventListener('click', function() { highlightCrop("wheat"); });
 
+
 }
 </script>
 </body>
 </html>
+
 
 
 
