@@ -296,17 +296,41 @@ function highlightCrop(cropName) {
   console.log("🌾 Highlighted crop:", cropName);
 }
 
-// ==== Crop Buttons ====
-document.getElementById('btn1').addEventListener('click', function() { highlightCrop("cotton"); });
-document.getElementById('btn2').addEventListener('click', function() { highlightCrop("rice"); });
-document.getElementById('btn3').addEventListener('click', function() { highlightCrop("sesame_seed"); });
-document.getElementById('btn4').addEventListener('click', function() { highlightCrop("wheat"); });
+let activeCrop = null; // track which crop is active
 
+  function clearHighlights() {
+    allLayers.forEach(layer => {
+      if (layer.setStyle) {
+        layer.setStyle({ fillColor: '', fillOpacity: 0.2, color: '#3388ff' });
+      }
+    });
+  }
 
+  function toggleCrop(cropName) {
+    if (activeCrop === cropName) {
+      // If same crop clicked again → turn off
+      clearHighlights();
+      activeCrop = null;
+      console.log("❌ Cleared highlights for", cropName);
+    } else {
+      // New crop → clear old and highlight new
+      clearHighlights();
+      highlightCrop(cropName);
+      activeCrop = cropName;
+      console.log("✅ Highlighted", cropName);
+    }
+  }
+
+  // Button event bindings
+  document.getElementById('btn1').addEventListener('click', function() { toggleCrop("cotton");  });
+  document.getElementById('btn2').addEventListener('click', function() { toggleCrop("rice");  });
+  document.getElementById('btn3').addEventListener('click', function() { toggleCrop("sesame_seed");  });
+  document.getElementById('btn4').addEventListener('click', function() { toggleCrop("wheat");  });
 
 </script>
 </body>
 </html>
+
 
 
 
