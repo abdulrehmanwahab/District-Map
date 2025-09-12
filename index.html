@@ -191,7 +191,7 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
   buildSidebar(data);
 
   // ==== Load Province Layer ====
- fetch('geoBoundaries-PAK-ADM1.geojson')
+ fetch('pak_boundry_rev.geojson')
 .then(r => r.json())
 .then(data => {
   pakprovince = L.geoJSON(data, {
@@ -376,6 +376,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
