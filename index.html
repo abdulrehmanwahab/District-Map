@@ -213,9 +213,8 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
   fetch('crops.json')
     .then(r => r.json())
     .then(data => cropData = data);
-});
 
- // Province checkbox listener goes here, **after pakprovince exists**
+  // Province checkbox listener goes here, **after pakprovince exists**
   document.getElementById('province-btn').addEventListener('change', function() {
     if (this.checked) {
       pakprovince.addTo(map);
@@ -376,6 +375,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
