@@ -191,7 +191,7 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
   buildSidebar(data);
 
  // ==== Load Province Layer ====
-fetch('pak_boundry_rev.geojson')
+fetch('pak_boundry_rev.json')
   .then(r => r.json())
   .then(data => {
     pakprovince = L.geoJSON(data, {
@@ -214,8 +214,7 @@ fetch('pak_boundry_rev.geojson')
     document.getElementById('province-btn').addEventListener('change', function () {
       if (this.checked) {
         pakprovince.addTo(map);
-        pakprovince.bringToBack();   // keep boundary behind ADM3
-        geojsonLayer.bringToFront(); // ADM3 always on top
+        pakprovince.bringToFront();   
       } else {
         map.removeLayer(pakprovince);
       }
@@ -377,6 +376,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
