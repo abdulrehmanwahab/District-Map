@@ -47,6 +47,7 @@
   font-size: 14px;   /* 👈 adjust size here */
   color: white;      /* optional: match sidebar text color */
 }
+
   
 </style>
 </head>
@@ -114,13 +115,24 @@
     <button id="btn4" style="flex:1;">Wheat</button>
     <input type="color" id="color-wheat" value="#F08080" style="margin-left:5px; width:30px; height:30px;">
   </div>
+    
  </div>
 </div>
 
 <div id="map">
   <div id="info-box">Hover over a tehsil or click to see details here</div>
 </div>
-
+`<div style="
+  background:${p.color};
+  color:white;
+  padding:4px 8px;
+  border-radius:5px;
+  font-size:13px;
+  font-weight:bold;
+  text-align:center;
+  box-shadow:0 2px 5px rgba(0,0,0,0.3);">
+    ${p.name}
+  </div>`
 <script>
 /* ==== Global variables ==== */
 var calloutEnabled = true;
@@ -494,7 +506,7 @@ function showProvinces() {
             color:white;
             padding:4px 8px;
             border-radius:5px;
-            font-size:13px;
+            font-size:11px;
             font-weight:bold;
             text-align:center;
             box-shadow:0 2px 5px rgba(0,0,0,0.3);">
@@ -519,6 +531,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
