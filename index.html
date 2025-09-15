@@ -474,11 +474,11 @@ function showProvinces() {
     // Province definitions (center = inside polygon, label = where box should be placed)
     let provinces = [
      { name: "Punjab", center: [31.0, 72.0], label: [31.5, 76.0], color: "#4CAF50" },   // green
-      { name: "Sindh", center: [25.5, 68.5], label: [26.5, 72.0], color: "#2196F3" },   // blue
-      { name: "Balochistan", center: [28.5, 65.0], label: [30.0, 63.3], color: "#FF5722" }, // orange
-      { name: "Khyber Pakhtunkhwa", center: [34.0, 71.5], label: [35.0, 66.0], color: "#9C27B0" }, // purple
-      { name: "Azad Kashmir", center: [34.5, 73.5], label: [35.5, 79.0], color: "#FFC107" }, // yellow
-      { name: "Gilgit Baltistan", center: [36.5, 74.5], label: [37.0, 69.0], color: "#795548" }  // brown
+      { name: "Sindh", center: [25.5, 68.5], label: [26.5, 72.0], color: "#4CAF50" },   // blue #2196F3"
+      { name: "Balochistan", center: [28.5, 65.0], label: [30.5, 63.3], color: "#4CAF50" }, // orange "#FF5722"
+      { name: "Khyber Pakhtunkhwa", center: [34.0, 71.5], label: [35.0, 66.0], color: "#4CAF50" }, // purple "#9C27B0"
+      { name: "Azad Kashmir", center: [34.5, 73.5], label: [35.5, 79.0], color: "#4CAF50" }, // yellow "#FFC107"
+      { name: "Gilgit Baltistan", center: [36.5, 74.5], label: [37.0, 69.0], color: "#4CAF50" }  // brown "#795548"
     ];
 
     provinces.forEach(p => {
@@ -497,7 +497,7 @@ function showProvinces() {
             font-size:13px;
             font-weight:bold;
             text-align:center;
-            box-shadow:0 5px 5px rgba(0,0,0,0.3);">
+            box-shadow:0 2px 5px rgba(0,0,0,0.3);">
               ${p.name}
             </div>`
         })
@@ -519,6 +519,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
