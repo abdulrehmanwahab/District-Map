@@ -167,36 +167,36 @@ function toggleHighlight(layer) {
   
 /* ==== Load ADM3 GeoJSON ==== */
 fetch('geoBoundaries-PAK-ADM3.geojson')
-.then(r => r.json())
-.then(data => {
-  geojsonLayer = L.geoJSON(data, {
-    style: defaultStyle,
-    onEachFeature: function(feature, layer) {
-      allLayers.push(layer);
-      if (feature.properties && feature.properties.shapeName) {
-        layer.bindTooltip(feature.properties.shapeName, {permanent: false});
+  .then(r => r.json())
+  .then(data => {
+    geojsonLayer = L.geoJSON(data, {
+      style: defaultStyle,
+      onEachFeature: function(feature, layer) {
+        allLayers.push(layer);
+        if (feature.properties && feature.properties.shapeName) {
+          layer.bindTooltip(feature.properties.shapeName, { permanent: false });
 
-        layer.on('mouseover', function() {
-          if (calloutEnabled) showInfo(feature.properties.shapeName);
-          if (tooltipEnabled) layer.openTooltip();
-        });
-        layer.on('mouseout', function() {
-          if (calloutEnabled) clearInfo();
-          if (tooltipEnabled) layer.closeTooltip();
-        });
-        layer.on('click', function() {
-          toggleHighlight(layer);
-          if (calloutEnabled) showInfo(feature.properties.shapeName);
-        });
+          layer.on('mouseover', function() {
+            if (calloutEnabled) showInfo(feature.properties.shapeName);
+            if (tooltipEnabled) layer.openTooltip();
+          });
+          layer.on('mouseout', function() {
+            if (calloutEnabled) clearInfo();
+            if (tooltipEnabled) layer.closeTooltip();
+          });
+          layer.on('click', function() {
+            toggleHighlight(layer);
+            if (calloutEnabled) showInfo(feature.properties.shapeName);
+          });
+        }
       }
-    }
-  }).addTo(map);
+    }).addTo(map);
 
-  map.fitBounds(geojsonLayer.getBounds());
+    map.fitBounds(geojsonLayer.getBounds());
+    buildSidebar(data);
+  });  // ✅ closes ADM3 fetch
 
-  buildSidebar(data);
-
- // ==== Load Province Layer ====
+/* ==== Load Province Layer ==== */
 fetch('pak_boundry_rev.json')
   .then(r => r.json())
   .then(data => {
@@ -209,25 +209,24 @@ fetch('pak_boundry_rev.json')
         opacity: 1
       },
       interactive: false,
-      onEachFeature: function (feature, layer) {
+      onEachFeature: function(feature, layer) {
         if (feature.properties && feature.properties.name) {
           layer.bindTooltip(feature.properties.name);
         }
       }
     });
 
-    // Province checkbox listener goes here, only after pakprovince exists
     document.getElementById('province-btn').addEventListener('change', function () {
       if (this.checked) {
         pakprovince.addTo(map);
-        pakprovince.bringToFront();   
+        pakprovince.bringToFront();
       } else {
         map.removeLayer(pakprovince);
       }
     });
   });
-  
-   // ==== Load Water Layer ====
+
+/* ==== Load Water Layer ==== */
 fetch('pak_waterways.json')
   .then(r => r.json())
   .then(data => {
@@ -235,29 +234,28 @@ fetch('pak_waterways.json')
       style: {
         fillColor: 'transparent',
         fillOpacity: 0,
-        color: "#000000",
-        weight: 3,
+        color: "#0000FF", // 💧 maybe make it blue instead of black
+        weight: 2,
         opacity: 1
       },
       interactive: false,
-      onEachFeature: function (feature, layer) {
+      onEachFeature: function(feature, layer) {
         if (feature.properties && feature.properties.name) {
           layer.bindTooltip(feature.properties.name);
         }
       }
     });
 
-    // Water map checkbox listener goes here, only after pakprovince exists
     document.getElementById('water-btn').addEventListener('change', function () {
       if (this.checked) {
         pakwater.addTo(map);
-        pakwater.bringToFront();   
+        pakwater.bringToFront();
       } else {
         map.removeLayer(pakwater);
       }
     });
   });
-     
+
   // ==== Load Crop Data ====
   fetch('crops.json')
     .then(r => r.json())
@@ -414,6 +412,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
