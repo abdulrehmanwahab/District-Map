@@ -27,6 +27,15 @@
   font-size: 14px;
 }
 
+.province-label span {
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  background: rgba(0,0,0,0.6);
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+  
 .district-item:hover {
   background-color: #3b8f52;  /* lighter green hover */
   color: #fff;                /* keep text white on hover */
@@ -131,6 +140,7 @@ var cropData = null;
 var pakprovince = null;
 var pakwater = null;
 var activeCrops = new Set();
+let provinceLayer, provinceLabels = [];  
 
 /* ==== UI controls ==== */
 document.getElementById('toggle-callout').addEventListener('change', function() {
@@ -248,15 +258,19 @@ fetch('pak_boundry_rev.json')
       }
     });
 
-    document.getElementById('province-btn').addEventListener('change', function () {
-      if (this.checked) {
-        pakprovince.addTo(map);
-        pakprovince.bringToFront();
-      } else {
-        map.removeLayer(pakprovince);
-      }
-    });
+  document.getElementById('province-btn').addEventListener('change', function () {
+  if (this.checked) {
+    showProvinces();
+  } else {
+    // Remove province layer
+    if (provinceLayer) map.removeLayer(provinceLayer);
+
+    // Remove labels + lines
+    provinceLabels.forEach(l => map.removeLayer(l));
+    provinceLabels = [];
+  }
   });
+});
 
 /* ==== Load Water Layer ==== */
 fetch('pak_waterways_10pc.json')
@@ -449,6 +463,41 @@ function toggleCrop(cropName) {
   if (activeCrops.size === 0) clearHighlights();
 }
 
+
+
+// === Function to show province outlines + labels ===
+function showProvinces() {
+  if (!provinceLayer) return; // make sure layer exists
+
+  provinceLayer.addTo(map);
+  provinceLayer.bringToFront();
+
+  // Example data for manual positioning
+  const provinceData = [
+    { name: "Punjab", center: [31.0, 72.0], label: [31.5, 73.0] },
+    { name: "Sindh", center: [25.5, 68.5], label: [26.0, 69.5] },
+    { name: "Khyber Pakhtunkhwa", center: [34.0, 71.5], label: [34.5, 72.0] },
+    { name: "Balochistan", center: [28.0, 66.0], label: [28.5, 67.0] },
+    // add more if needed
+  ];
+
+  provinceData.forEach(p => {
+    // Line
+    const line = L.polyline([p.center, p.label], { color: "black", weight: 1 }).addTo(map);
+    provinceLabels.push(line);
+
+    // Label
+    const label = L.marker(p.label, {
+      icon: L.divIcon({
+        className: "province-label",
+        html: `<div style="background:white; border:1px solid black; padding:2px 5px; font-size:12px;">${p.name}</div>`
+      })
+    }).addTo(map);
+    provinceLabels.push(label);
+  });
+}
+
+  
 /* ==== Crop Buttons ==== */
 document.getElementById('btn1').addEventListener('click', () => toggleCrop("cotton"));
 document.getElementById('btn2').addEventListener('click', () => toggleCrop("rice"));
@@ -458,6 +507,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
