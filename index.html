@@ -143,6 +143,7 @@ var pakprovince = null;
 var pakwater = null;
 var activeCrops = new Set();
 let provinceLayer, provinceLabels = [];  
+let watereLayer, waterLabels = [];  
 
 /* ==== UI controls ==== */
 document.getElementById('toggle-callout').addEventListener('change', function() {
@@ -282,38 +283,28 @@ fetch('pak_waterways_10pc.json')
       style: {
         fillColor: 'transparent',
         fillOpacity: 0,
-        color: "#0000FF", // 💧 maybe make it blue instead of black
+        color: "#0000FF", // 💧 Blue rivers
         weight: 1,
         opacity: 1
       },
       interactive: true,
       onEachFeature: function(feature, layer) {
-    if (feature.properties && feature.properties.name) {
-    // Tooltip on hover
-    layer.bindTooltip(feature.properties.name, { permanent: false });
-
-    // Show in callout on hover
-    layer.on('mouseover', function() {
-      if (calloutEnabled) showInfo(feature.properties.name);
-      if (tooltipEnabled) layer.openTooltip();
-    });
-    layer.on('mouseout', function() {
-      if (calloutEnabled) clearInfo();
-      if (tooltipEnabled) layer.closeTooltip();
-    });
-    layer.on('click', function() {
-      if (calloutEnabled) showInfo(feature.properties.name);
-    });
-  }
-}
+        if (feature.properties && feature.properties.name) {
+          layer.bindTooltip(feature.properties.name);
+        }
+      }
     });
 
     document.getElementById('water-btn').addEventListener('change', function () {
       if (this.checked) {
-        pakwater.addTo(map);
-        pakwater.bringToFront();
+        showRivers(); // turn rivers ON
       } else {
-        map.removeLayer(pakwater);
+        // Remove water layer
+        if (pakwater) map.removeLayer(pakwater);
+
+        // Remove labels + lines
+        riverLabels.forEach(l => map.removeLayer(l));
+        riverLabels = [];
       }
     });
   });
@@ -513,6 +504,54 @@ function showProvinces() {
 }
 
 
+  // === Function to Show River outlines + labels ===
+ function showRivers() {
+  if (pakwater) {
+    watereLayer = pakwater.addTo(map);  
+    watereLayer.bringToFront();
+
+    // Province definitions (center = inside polygon, label = where box should be placed)
+    let rivers = [
+     { name: "Indus River", center: [31.0, 72.0], label: [35.0, 66.0], color: "#2196F3" },   // green
+      { name: "Jehlum River", center: [25.5, 68.5], label: [26.5, 72.0], color: "#2196F3" },   // blue "#2196F3"
+      { name: "Chenab River", center: [28.5, 65.0], label: [30.5, 63.3], color: "#2196F3" }, // orange "#FF5722"
+      { name: "Ravi River", center: [34.0, 71.5], label: [35.0, 66.0], color: "#2196F3" }, // purple "#9C27B0"
+      { name: "Satluj River", center: [34.5, 73.5], label: [35.5, 79.0], color: "#2196F3" }, // yellow "#FFC107"
+      { name: "Punjnud", center: [36.5, 74.5], label: [37.0, 69.0], color: "#9C27B0" },  // brown "#795548"
+      { name: "Tarbela Dam", center: [36.5, 74.5], label: [36.0, 69.0], color: "#795548" },  // brown "#795548"
+       { name: "Mangla Dam", center: [36.5, 74.5], label: [36.0, 73.0], color: "#795548" }, 
+       { name: "Kala Bag (Location)", center: [36.5, 74.5], label: [34.0, 69.0], color: "#2196F3" } 
+    ];
+
+      rivers.forEach(p => {
+      // Draw line from river center to label box
+      let line = L.polyline([p.center, p.label], { color: 'black', weight: 1 }).addTo(map);
+
+      // Add label with colored background box
+      let text = L.marker(p.label, {
+        icon: L.divIcon({
+        className: 'river-label',
+        html: `<div style="
+        display:inline-block;
+        background:${p.color};
+        color:white;
+        padding:4px 10px;
+        border-radius:5px;
+        font-size:12px;
+        font-weight:bold;
+        text-align:center;
+        white-space:nowrap;
+        box-shadow:0 2px 5px rgba(0,0,0,0.3);">
+          ${p.name}
+        </div>`
+        })
+      }).addTo(map);
+
+      waterLabels.push(line, text);
+    });
+  }
+}
+
   
 /* ==== Crop Buttons ==== */
 document.getElementById('btn1').addEventListener('click', () => toggleCrop("cotton"));
@@ -523,6 +562,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
