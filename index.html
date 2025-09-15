@@ -467,34 +467,29 @@ function toggleCrop(cropName) {
 
 // === Function to show province outlines + labels ===
 function showProvinces() {
-  if (!provinceLayer) return; // make sure layer exists
+  if (pakprovince) {
+    provinceLayer = pakprovince.addTo(map);  // add boundaries to map
+    provinceLayer.bringToFront();
 
-  provinceLayer.addTo(map);
-  provinceLayer.bringToFront();
+    // Example: draw labels + lines for each province
+    let provinces = [
+      { name: "Punjab", center: [31.0, 72.0], label: [31.5, 73.0] },
+      { name: "Sindh", center: [25.5, 68.5], label: [26.0, 69.5] },
+      // add all provinces here...
+    ];
 
-  // Example data for manual positioning
-  const provinceData = [
-    { name: "Punjab", center: [31.0, 72.0], label: [31.5, 73.0] },
-    { name: "Sindh", center: [25.5, 68.5], label: [26.0, 69.5] },
-    { name: "Khyber Pakhtunkhwa", center: [34.0, 71.5], label: [34.5, 72.0] },
-    { name: "Balochistan", center: [28.0, 66.0], label: [28.5, 67.0] },
-    // add more if needed
-  ];
+    provinces.forEach(p => {
+      let line = L.polyline([p.center, p.label], { color: 'black', weight: 1 }).addTo(map);
+      let text = L.marker(p.label, {
+        icon: L.divIcon({
+          className: 'province-label',
+          html: `<div style="color:white;font-size:14px;font-weight:bold;">${p.name}</div>`
+        })
+      }).addTo(map);
 
-  provinceData.forEach(p => {
-    // Line
-    const line = L.polyline([p.center, p.label], { color: "black", weight: 1 }).addTo(map);
-    provinceLabels.push(line);
-
-    // Label
-    const label = L.marker(p.label, {
-      icon: L.divIcon({
-        className: "province-label",
-        html: `<div style="background:white; border:1px solid black; padding:2px 5px; font-size:12px;">${p.name}</div>`
-      })
-    }).addTo(map);
-    provinceLabels.push(label);
-  });
+      provinceLabels.push(line, text);
+    });
+  }
 }
 
   
@@ -507,6 +502,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
