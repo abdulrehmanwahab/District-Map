@@ -240,7 +240,7 @@ fetch('pak_boundry_rev.json')
         weight: 3,
         opacity: 1
       },
-      interactive: true,
+      interactive: false,
       onEachFeature: function(feature, layer) {
         if (feature.properties && feature.properties.name) {
           layer.bindTooltip(feature.properties.name);
@@ -272,10 +272,24 @@ fetch('pak_waterways_10pc.json')
       },
       interactive: true,
       onEachFeature: function(feature, layer) {
-        if (feature.properties && feature.properties.name) {
-          layer.bindTooltip(feature.properties.name);
-        }
-      }
+    if (feature.properties && feature.properties.name) {
+    // Tooltip on hover
+    layer.bindTooltip(feature.properties.name, { permanent: false });
+
+    // Show in callout on hover
+    layer.on('mouseover', function() {
+      if (calloutEnabled) showInfo(feature.properties.name);
+      if (tooltipEnabled) layer.openTooltip();
+    });
+    layer.on('mouseout', function() {
+      if (calloutEnabled) clearInfo();
+      if (tooltipEnabled) layer.closeTooltip();
+    });
+    layer.on('click', function() {
+      if (calloutEnabled) showInfo(feature.properties.name);
+    });
+  }
+}
     });
 
     document.getElementById('water-btn').addEventListener('change', function () {
@@ -444,6 +458,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
