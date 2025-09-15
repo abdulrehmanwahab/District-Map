@@ -205,7 +205,7 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
         geojsonLayer.addTo(map);
         geojsonLayer.bringToFront();
       } else {
-        map.removeLayer(pakwater);
+        map.removeLayer(geojsonLayer);
       }
     });
   });  // ✅ closes ADM3 fetch
@@ -426,6 +426,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
