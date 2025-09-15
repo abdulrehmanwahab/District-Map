@@ -41,6 +41,11 @@
     <label for="province-btn">Show Province</label>
   </div>
 
+  <div class="toggle-container">
+    <input type="checkbox" id="tehsil-btn" checked>
+    <label for="tehsil-btn">Show Tehsil</label>
+  </div>
+
    <div class="toggle-container">
     <input type="checkbox" id="water-btn">
     <label for="water-btn">Show Water Map</label>
@@ -194,6 +199,15 @@ fetch('geoBoundaries-PAK-ADM3.geojson')
 
     map.fitBounds(geojsonLayer.getBounds());
     buildSidebar(data);
+
+     document.getElementById('tehsil-btn').addEventListener('change', function () {
+      if (this.checked) {
+        geojsonLayer.addTo(map);
+        geojsonLayer.bringToFront();
+      } else {
+        map.removeLayer(pakwater);
+      }
+    });
   });  // ✅ closes ADM3 fetch
 
 /* ==== Load Province Layer ==== */
@@ -412,6 +426,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
