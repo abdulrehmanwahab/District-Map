@@ -17,8 +17,20 @@
               border: 1px solid #333; border-radius: 5px; font-weight: bold;
               pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: block; }
   h3 { margin: 10px 0 5px 0; font-size: 14px; color: #FFFFFF; cursor: default; }
-  .district-item { cursor: pointer; padding: 5px; margin: 2px 0; border-radius: 5px; padding-left: 15px; }
-  .district-item:hover { background-color: #e0e0e0; }
+  .district-item {
+  cursor: pointer;
+  padding: 5px;
+  margin: 2px 0;
+  border-radius: 5px;
+  padding-left: 15px;
+  color: white;               /* text color white */
+  font-size: 14px;
+}
+
+.district-item:hover {
+  background-color: #3b8f52;  /* lighter green hover */
+  color: #fff;                /* keep text white on hover */
+}
   .toggle-container { margin-bottom: 10px; }
   button { display:block; margin-top: 5px; }
 
@@ -432,6 +444,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
