@@ -468,22 +468,38 @@ function toggleCrop(cropName) {
 // === Function to show province outlines + labels ===
 function showProvinces() {
   if (pakprovince) {
-    provinceLayer = pakprovince.addTo(map);  // add boundaries to map
+    provinceLayer = pakprovince.addTo(map);  
     provinceLayer.bringToFront();
 
-    // Example: draw labels + lines for each province
+    // Province definitions (center = inside polygon, label = where box should be placed)
     let provinces = [
-      { name: "Punjab", center: [31.0, 72.0], label: [31.5, 73.0] },
-      { name: "Sindh", center: [25.5, 68.5], label: [26.0, 69.5] },
-      // add all provinces here...
+      { name: "Punjab", center: [31.0, 72.0], label: [31.5, 74.0], color: "#4CAF50" },   // green
+      { name: "Sindh", center: [25.5, 68.5], label: [26.5, 69.5], color: "#2196F3" },   // blue
+      { name: "Balochistan", center: [28.5, 65.0], label: [29.5, 66.0], color: "#FF5722" }, // orange
+      { name: "Khyber Pakhtunkhwa", center: [34.0, 71.5], label: [35.0, 72.5], color: "#9C27B0" }, // purple
+      { name: "Azad Kashmir", center: [34.5, 74.0], label: [35.5, 75.0], color: "#FFC107" }, // yellow
+      { name: "Gilgit Baltistan", center: [36.5, 74.5], label: [37.0, 75.5], color: "#795548" }  // brown
     ];
 
     provinces.forEach(p => {
+      // Draw line from province center to label box
       let line = L.polyline([p.center, p.label], { color: 'black', weight: 1 }).addTo(map);
+
+      // Add label with colored background box
       let text = L.marker(p.label, {
         icon: L.divIcon({
           className: 'province-label',
-          html: `<div style="color:white;font-size:14px;font-weight:bold;">${p.name}</div>`
+          html: `<div style="
+            background:${p.color};
+            color:white;
+            padding:4px 8px;
+            border-radius:5px;
+            font-size:13px;
+            font-weight:bold;
+            text-align:center;
+            box-shadow:0 2px 5px rgba(0,0,0,0.3);">
+              ${p.name}
+            </div>`
         })
       }).addTo(map);
 
@@ -491,6 +507,7 @@ function showProvinces() {
     });
   }
 }
+
 
   
 /* ==== Crop Buttons ==== */
@@ -502,6 +519,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
