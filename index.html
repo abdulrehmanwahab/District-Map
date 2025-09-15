@@ -240,7 +240,7 @@ fetch('pak_boundry_rev.json')
         weight: 3,
         opacity: 1
       },
-      interactive: false,
+      interactive: true,
       onEachFeature: function(feature, layer) {
         if (feature.properties && feature.properties.name) {
           layer.bindTooltip(feature.properties.name);
@@ -270,7 +270,7 @@ fetch('pak_waterways_10pc.json')
         weight: 1,
         opacity: 1
       },
-      interactive: false,
+      interactive: true,
       onEachFeature: function(feature, layer) {
         if (feature.properties && feature.properties.name) {
           layer.bindTooltip(feature.properties.name);
@@ -444,6 +444,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
