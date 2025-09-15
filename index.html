@@ -226,12 +226,42 @@ fetch('pak_boundry_rev.json')
       }
     });
   });
+  
+   // ==== Load Water Layer ====
+fetch('pak_waterways.json')
+  .then(r => r.json())
+  .then(data => {
+    pakwater = L.geoJSON(data, {
+      style: {
+        fillColor: 'transparent',
+        fillOpacity: 0,
+        color: "#000000",
+        weight: 3,
+        opacity: 1
+      },
+      interactive: false,
+      onEachFeature: function (feature, layer) {
+        if (feature.properties && feature.properties.name) {
+          layer.bindTooltip(feature.properties.name);
+        }
+      }
+    });
+
+    // Water map checkbox listener goes here, only after pakprovince exists
+    document.getElementById('water-btn').addEventListener('change', function () {
+      if (this.checked) {
+        pakwater.addTo(map);
+        pakwater.bringToFront();   
+      } else {
+        map.removeLayer(pakwater);
+      }
+    });
+  });
+     
   // ==== Load Crop Data ====
   fetch('crops.json')
     .then(r => r.json())
     .then(data => cropData = data);
-
-
 
   
  /* ==== Styles ==== */
@@ -384,6 +414,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
