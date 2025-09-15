@@ -123,16 +123,18 @@
   <div id="info-box">Hover over a tehsil or click to see details here</div>
 </div>
 `<div style="
+  display:inline-block;
   background:${p.color};
   color:white;
-  padding:4px 8px;
+  padding:4px 10px;
   border-radius:5px;
-  font-size:13px;
+  font-size:12px;
   font-weight:bold;
   text-align:center;
+  white-space:nowrap;
   box-shadow:0 2px 5px rgba(0,0,0,0.3);">
     ${p.name}
-  </div>`
+</div>`
 <script>
 /* ==== Global variables ==== */
 var calloutEnabled = true;
@@ -531,6 +533,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
