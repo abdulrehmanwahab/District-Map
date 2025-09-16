@@ -395,16 +395,15 @@ function getCropColor(cropName) {
 function highlightCrop(cropName) {
   if (!cropData || !cropData[cropName]) return;
 
-  Object.values(cropData[cropName]).forEach(provinceObj => {
-    Object.values(provinceObj).forEach(districtList => {
+     Object.values(cropData[cropName]).forEach(districtList => {
       districtList.forEach(districtName => {
         geojsonLayer.eachLayer(layer => {
           if (layer.feature.properties.shapeName &&
               layer.feature.properties.shapeName.toLowerCase() === districtName.toLowerCase()) {
-
+    
             layer._highlightBy = layer._highlightBy || {};
             layer._highlightBy[cropName] = getCropColor(cropName);
-
+    
             let lastColor = Object.values(layer._highlightBy).slice(-1)[0];
             layer._isHighlighted = true;
             layer._highlightColor = lastColor;
@@ -414,21 +413,21 @@ function highlightCrop(cropName) {
         });
       });
     });
+
   });
 }
 
 function removeCropHighlight(cropName) {
   if (!cropData || !cropData[cropName]) return;
 
-  Object.values(cropData[cropName]).forEach(provinceObj => {
-    Object.values(provinceObj).forEach(districtList => {
+      Object.values(cropData[cropName]).forEach(districtList => {
       districtList.forEach(districtName => {
         geojsonLayer.eachLayer(layer => {
           if (layer.feature.properties.shapeName &&
               layer.feature.properties.shapeName.toLowerCase() === districtName.toLowerCase()) {
-
+    
             if (layer._highlightBy) delete layer._highlightBy[cropName];
-
+    
             if (layer._highlightBy && Object.keys(layer._highlightBy).length > 0) {
               let lastColor = Object.values(layer._highlightBy).slice(-1)[0];
               layer._highlightColor = lastColor;
@@ -562,6 +561,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
