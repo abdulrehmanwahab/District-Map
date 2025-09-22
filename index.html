@@ -276,7 +276,7 @@ fetch('pak_boundry_rev.json')
 });
 
 /* ==== Load Water Layer ==== */
-fetch('pakistan-waterways.json')
+fetch('pak_waterways_10pc.json')
   .then(r => r.json())
   .then(data => {
     pakwater = L.geoJSON(data, {
@@ -558,6 +558,7 @@ document.getElementById('btn4').addEventListener('click', () => toggleCrop("whea
 </script>
 </body>
 </html>
+
 
 
 
