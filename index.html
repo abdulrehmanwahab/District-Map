@@ -416,12 +416,13 @@ function buildSidebar(data) {
     // Heading with arrow
     let heading = document.createElement('h3');
     heading.className = 'province-heading';
-    heading.innerHTML = `<span class="arrow">▾</span> ${group}`;
+    heading.innerHTML = `<span class="arrow">▸</span> ${group}`;
     sidebar.appendChild(heading);
 
     // Container for this province's districts
     let container = document.createElement('div');
     container.className = 'district-group';
+    container.style.display = 'none';
 
     groups[group].sort((a,b) => a.properties.shapeName.localeCompare(b.properties.shapeName))
       .forEach(f => {
