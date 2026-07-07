@@ -366,7 +366,7 @@ function clearHighlights() {
 }
 
 /* ==== Sidebar ==== */
-
+/*
   function buildSidebar(data) {
   let sidebar = document.getElementById('sidebar');
   let groups = {};
@@ -394,13 +394,8 @@ function clearHighlights() {
   });
 }
 
-function highlightDistrict(name) {
-  geojsonLayer.eachLayer(layer => {
-    if (layer.feature.properties.shapeName === name) toggleHighlight(layer);
-  });
-}
+*/
 
-/*
 function buildSidebar(data) {
   let sidebar = document.getElementById('sidebar');
   let groups = {};
@@ -443,7 +438,12 @@ function buildSidebar(data) {
     });
   });
 }
-*/
+
+  function highlightDistrict(name) {
+  geojsonLayer.eachLayer(layer => {
+    if (layer.feature.properties.shapeName === name) toggleHighlight(layer);
+  });
+}
   
 /* ==== Crop Highlights ==== */
 function getCropColor(cropName) {
