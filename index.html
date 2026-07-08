@@ -109,7 +109,7 @@ h3.province-heading {
 
   <div class="toggle-container">
     <label for="color-picker-province">Province Color:</label><br>
-    <input type="color" id="color-picker-map" value="#000000" style="width:50%; margin-top:5px;">
+    <input type="color" id="color-picker-map" value="#00FFFFFF" style="width:50%; margin-top:5px;">
   </div>
 
   <div class="toggle-container">
@@ -189,10 +189,10 @@ document.getElementById('color-picker-map-bgrd').addEventListener('input', funct
   if (geojsonLayer) geojsonLayer.setStyle(defaultStyle);
 });
 
-/*  document.getElementById('color-picker-province').addEventListener('input', function() {
+  document.getElementById('color-picker-province').addEventListener('input', function() {
   provinceBGcolor = this.value;
   if (geojsonLayer) geojsonLayer.setStyle(defaultStyle);
-}); */
+}); 
 
 document.getElementById('color-picker-map-line').addEventListener('input', function() {
   mapLineColor = this.value;
@@ -270,13 +270,16 @@ fetch('pak_boundry_rev.json')
   .then(r => r.json())
   .then(data => {
     pakprovince = L.geoJSON(data, {
+      style: defaultStyle,
+      /*      
       style: {
         fillColor: 'transparent',
         fillOpacity: 0,
         color: "#000000",
         weight: 3,
         opacity: 1
-      },
+      },  
+      */
       interactive: false,
       onEachFeature: function(feature, layer) {
         if (feature.properties && feature.properties.name) {
