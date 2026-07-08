@@ -108,7 +108,7 @@ h3.province-heading {
   </div>
 
   <div class="toggle-container">
-    <label for="color-picker-map">Map Color:</label><br>
+    <label for="color-picker-province">Province Color:</label><br>
     <input type="color" id="color-picker-map" value="#000000" style="width:50%; margin-top:5px;">
   </div>
 
@@ -188,6 +188,12 @@ document.getElementById('color-picker-map-bgrd').addEventListener('input', funct
   mapColor = this.value;
   if (geojsonLayer) geojsonLayer.setStyle(defaultStyle);
 });
+
+  document.getElementById('color-picker-province').addEventListener('input', function() {
+  provinceBGcolor = this.value;
+  if (geojsonLayer) geojsonLayer.setStyle(defaultStyle);
+});
+  
 
 document.getElementById('color-picker-map-line').addEventListener('input', function() {
   mapLineColor = this.value;
