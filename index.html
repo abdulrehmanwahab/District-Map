@@ -147,7 +147,7 @@ var calloutEnabled = true;
 var tooltipEnabled = true;
 var currentHighlightColor = "#ffa500"; 
 var mapColor = "#90EE90";
-var provinceBGcolor = "#2196F3"
+var provinceFillColor = "transparent";
 var mapLineColor = "#000000";
 
 var map = L.map('map').setView([30.0, 70.0], 5);
@@ -189,10 +189,13 @@ document.getElementById('color-picker-map-bgrd').addEventListener('input', funct
   if (geojsonLayer) geojsonLayer.setStyle(defaultStyle);
 });
 
-  document.getElementById('color-picker-province').addEventListener('input', function() {
-  provinceBGcolor = this.value;
-  if (geojsonLayer) geojsonLayer.setStyle(defaultStyle);
-}); 
+  document.getElementById("color-picker-province").addEventListener("input", function () {
+    provinceFillColor = this.value;
+
+    if (pakprovince) {
+        pakprovince.setStyle(provinceStyle);
+    }
+});
 
 document.getElementById('color-picker-map-line').addEventListener('input', function() {
   mapLineColor = this.value;
@@ -270,16 +273,16 @@ fetch('pak_boundry_rev.json')
   .then(r => r.json())
   .then(data => {
     pakprovince = L.geoJSON(data, {
-      style: defaultStyle,
-      /*      
+     
+      /*
       style: {
         fillColor: 'transparent',
         fillOpacity: 0,
         color: "#000000",
         weight: 3,
         opacity: 1
-      },  
-      */
+      }, */ 
+      style: provinceStyle,
       interactive: false,
       onEachFeature: function(feature, layer) {
         if (feature.properties && feature.properties.name) {
@@ -350,6 +353,16 @@ function defaultStyle(feature) {
     weight: feature._isHighlighted ? 2 : 1,
     fillOpacity: feature._isHighlighted ? 0.75 : 0.8
   };
+}
+
+function provinceStyle() {
+   return {
+        fillColor: provinceFillColor,
+        fillOpacity: provinceFillColor === "transparent" ? 0 : 0.8,
+        color: "#000000",
+        weight: 3,
+        opacity: 1
+    };
 }
 
 /* ==== Info Box ==== */
