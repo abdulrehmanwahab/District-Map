@@ -318,7 +318,8 @@ fetch('pak_boundry_rev.json')
         
         // Apply disputed territory style
         if (feature.properties.ADM1_EN === "Disputed Territory") {
-            disputedStyle(layer);
+          console.log("Found disputed territory");  
+          disputedStyle(layer);
         }
 
              
