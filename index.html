@@ -412,16 +412,11 @@ function disputedStyle(layer) {
         fillOpacity: 1
     });
 
-    
-    console.log(layer._path);
-
-    setTimeout(function () {
-        console.log(layer._path);
-
-        if (layer._path) {
-            layer._path.setAttribute("fill", "url(#diagonalHatch)");
-        }
-    }, 100);
+ layer.on("add", function () {
+   if (layer._path) { 
+     layer._path.setAttribute("fill", "url(#diagonalHatch)"); 
+   } 
+ });
 }
   
 /* ==== Info Box ==== */
