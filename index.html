@@ -315,9 +315,19 @@ fetch('pak_boundry_rev.json')
       style: provinceStyle,
       interactive: false,
       onEachFeature: function(feature, layer) {
-        if (feature.properties && feature.properties.name) {
-          layer.bindTooltip(feature.properties.name);
+        
+        // Apply disputed territory style
+        if (feature.properties.ADM1_EN === "Disputed Territory") {
+            disputedStyle(layer);
         }
+
+        if (feature.properties && feature.properties.ADM1_EN) {
+          layer.bindTooltip(feature.properties.ADM1_EN);
+        }
+       
+       /* if (feature.properties && feature.properties.name) {
+          layer.bindTooltip(feature.properties.name);
+        }*/
       }
     });
 
@@ -571,7 +581,7 @@ function showProvinces() {
       { name: "Azad Kashmir", center: [34.5, 73.5], label: [35.5, 79.0], color: "#4CAF50" }, // yellow "#FFC107"
       { name: "Gilgit Baltistan", center: [36.5, 74.5], label: [37.0, 69.0], color: "#4CAF50" },  // brown "#795548"
       { name: "Islamabad", center: [33.6, 73.0], label: [33.6, 79.0], color: "#006400" },
-      { name: "Disputed Territory", center: [34.1, 76.4], label: [34.1, 76.4], color: "#000000" }
+      { name: "Disputed Territory", center: [34.1, 76.2], label: [34.1, 76.2], color: "#000000" }
     ];
 
     provinces.forEach(p => {
