@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin></script>
-<script src="https://unpkg.com/leaflet.pattern/leaflet.pattern.js"></script>
 <link rel="icon" href="data:,">
 <style>
   html, body { height: 100%; margin: 0; padding: 0; }
@@ -156,16 +155,30 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-  // Create disputed pattern
-var disputedPattern = new L.StripePattern({
-    weight: 2,
-    spaceWeight: 4,
-    color: "#555555",
-    opacity: 0.8,
-    angle: 45
-});
+// ===== SVG Hatch Pattern =====
+var svg = map.getRenderer(map)._container;
 
-disputedPattern.addTo(map);
+var defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+svg.appendChild(defs);
+
+var pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+pattern.setAttribute("id", "diagonalHatch");
+pattern.setAttribute("patternUnits", "userSpaceOnUse");
+pattern.setAttribute("width", "8");
+pattern.setAttribute("height", "8");
+pattern.setAttribute("patternTransform", "rotate(45)");
+
+defs.appendChild(pattern);
+
+var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+line.setAttribute("x1", "0");
+line.setAttribute("y1", "0");
+line.setAttribute("x2", "0");
+line.setAttribute("y2", "8");
+line.setAttribute("stroke", "#666");
+line.setAttribute("stroke-width", "2");
+
+pattern.appendChild(line);
 
 var geojsonLayer = null;
 var allLayers = [];
@@ -393,10 +406,15 @@ function provinceStyle() {
   /* ==== Disputed Territory Style ==== */
 function disputedStyle(layer) {
     layer.setStyle({
-        fillPattern: disputedPattern,
-        dashArray: "6,6",
-        color: "#000000",
-        weight: 1
+        color: "#000",
+        weight: 2,
+        dashArray: "6,6"
+    });
+
+    layer.on("add", function () {
+        if (layer._path) {
+            layer._path.setAttribute("fill", "url(#diagonalHatch)");
+        }
     });
 }
   
