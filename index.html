@@ -236,12 +236,10 @@ fetch('pak-tehsils.geojson')
       style: defaultStyle,
       onEachFeature: function(feature, layer) {
 
-         // Give dashed border to Disputed Territory
+         // Give dashed border & dash fill to Disputed Territory
         if (feature.properties.shapeName === "Disputed Territory") {
-        layer.setStyle({
-            dashArray: "6,6"
-        });
-        }
+           disputedStyle(layer);
+         }
       
         allLayers.push(layer);
         if (feature.properties && feature.properties.shapeName) {
@@ -373,6 +371,16 @@ function provinceStyle() {
     };
 }
 
+  /* ==== Disputed Territory Style ==== */
+function disputedStyle(layer) {
+    layer.setStyle({
+        fillPattern: disputedPattern,
+        dashArray: "6,6",
+        color: "#000000",
+        weight: 1
+    });
+}
+  
 /* ==== Info Box ==== */
 function showInfo(name) { document.getElementById('info-box').innerHTML = "<b>Selected Tehsil:</b> " + name; }
 function clearInfo() { document.getElementById('info-box').innerHTML = "Hover over a tehsil or click to see details here"; }
