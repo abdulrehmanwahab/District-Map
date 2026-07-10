@@ -317,13 +317,13 @@ fetch('pak_boundry_rev.json')
       onEachFeature: function(feature, layer) {
         
         // Apply disputed territory style
-        if (feature.properties.name === "Disputed Territory") {
+        if (feature.properties.ADM1_EN === "Disputed Territory") {
             disputedStyle(layer);
         }
 
              
-       if (feature.properties && feature.properties.name) {
-          layer.bindTooltip(feature.properties.name);
+       if (feature.properties && feature.properties.ADM1_EN) {
+          layer.bindTooltip(feature.properties.ADM1_EN);
         }
       }
     });
