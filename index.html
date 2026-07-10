@@ -235,6 +235,14 @@ fetch('pak-tehsils.geojson')
     geojsonLayer = L.geoJSON(data, {
       style: defaultStyle,
       onEachFeature: function(feature, layer) {
+
+         // Give dashed border to Disputed Territory
+        if (feature.properties.shapeName === "Disputed Territory") {
+        layer.setStyle({
+            dashArray: "6,6"
+        });
+        }
+      
         allLayers.push(layer);
         if (feature.properties && feature.properties.shapeName) {
           layer.bindTooltip(feature.properties.shapeName, { permanent: false });
