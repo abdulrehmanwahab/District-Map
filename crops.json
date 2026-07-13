@@ -18,6 +18,7 @@
     "Sindh": ["Sukkur", "Rohri", "Pano Aqil", "Salehpat", "Shikarpur", "Nawabshah", "Daulatpur", "Sakrand", "Qazi Ahmed", "Hyderabad City", "Hyderabad Rural", "Latifabad", "Qasimabad", "Mirpur Khas", "Digri", "Kot Ghulam Muhammad", "Hussain Bux Mari", "Larkana", "Ratodero", "Dokri", "Bakrani", "Kamber"],
     "Balochistan": ["Nasirabad", "Dera Murad Jamali", "Tamboo", "Chatter", "Dera Allah Yar", "Gandakha", "Usta Muhammad"]
   },
+ 
   "sesame_seed": {
     "Punjab": [
   "Kot Addu",
@@ -105,7 +106,8 @@
   "Jalalpur Pirwala",
   "Shujabad"
 ],
-    "Sindh": ["Mehar",
+    "Sindh": [
+  "Mehar",
   "Dokri",
   "Larkana",
   "Sukkur",
@@ -115,8 +117,23 @@
   "Mithi",
   "Chachro",
   "Nagar Parkar",
-  "Diplo","Sehwan","Umer Kot","Sanghar"],
-    "Khyber Pakhtunkhwa": ["Charsadda"],
-    "Balochistan": ["Dera Bughti", "Sibi","Bhag", "Dhadar", "Mach Sub". "Sanni Sub","Ghandakha", "Jhat Pat"]
+  "Diplo",
+  "Sehwan",
+  "Umerkot",
+  "Sanghar"
+],
+"Khyber Pakhtunkhwa": [
+  "Charsadda"
+],
+"Balochistan": [
+  "Dera Bugti",
+  "Sibi",
+  "Bhag",
+  "Dhadar",
+  "Mach Sub",
+  "Sanni Sub",
+  "Gandakha",
+  "Jhat Pat"
+]
   }
 }
