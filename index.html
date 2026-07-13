@@ -586,15 +586,7 @@ function showProvinces() {
     provinces.forEach(p => {
       // Draw line from province center to label box
       let line = L.polyline([p.center, p.label], { color: 'black', weight: 1 }).addTo(map);
-
-      // Filled circle at the river location (start)
-      L.circleMarker(p.center, {
-          radius: 4,
-          color: 'black',
-          fillColor: 'black',
-          fillOpacity: 1
-      }).addTo(map);
-      
+           
       // Add label with colored background box
       let text = L.marker(p.label, {
         icon: L.divIcon({
@@ -644,6 +636,14 @@ function showProvinces() {
       // Draw line from river center to label box
       let line = L.polyline([p.center, p.label], { color: 'black', weight: 1 }).addTo(map);
 
+     // Filled circle at the river location (start)
+      L.circleMarker(p.center, {
+          radius: 4,
+          color: 'black',
+          fillColor: 'black',
+          fillOpacity: 1
+      }).addTo(map);
+        
       // Add label with colored background box
       let text = L.marker(p.label, {
         icon: L.divIcon({
