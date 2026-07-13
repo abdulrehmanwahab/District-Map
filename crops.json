@@ -19,7 +19,15 @@
     "Balochistan": ["Nasirabad", "Dera Murad Jamali", "Tamboo", "Chatter", "Dera Allah Yar", "Gandakha", "Usta Muhammad"]
   },
   "sesame_seed": {
-    "Punjab": ["Multan City", "Multan Saddar", "Shujabad", "Jalalpur Pirwala", "Bahawalpur City", "Bahawalpur Saddar", "Ahmadpur East", "Hasilpur", "Khairpur Tamewali", "Dera Ghazi Khan", "Taunsa", "Kot Chutta", "Tribal Area"],
+    "Punjab": [ "Kot Addu",
+  "Layyah",
+  "Depalpur",
+  "Samundari",
+  "Chunian",
+  "Minchinabad",
+  "Kasur",
+  "Sargodha",
+  "Mandi Bahauddin"],
     "Sindh": ["Mirpur Khas", "Digri", "Kot Ghulam Muhammad", "Hussain Bux Mari", "Thatta", "Mirpur Sakro", "Keti Bandar", "Ghorabari", "Badin", "Matli", "Tando Bago", "Talhar"],
     "Khyber Pakhtunkhwa": ["Dera Ismail Khan", "Paharpur", "Kulachi", "Paroa"],
     "Balochistan": ["Nasirabad", "Dera Murad Jamali", "Tamboo", "Chatter", "Dera Allah Yar", "Gandakha", "Usta Muhammad"]
