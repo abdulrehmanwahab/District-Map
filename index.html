@@ -637,7 +637,7 @@ function showProvinces() {
       let line = L.polyline([p.center, p.label], { color: 'black', weight: 1 }).addTo(map);
 
      // Filled circle at the river location (start)
-      L.circleMarker(p.center, {
+      let circle = L.circleMarker(p.center, {
           radius: 4,
           color: 'black',
           fillColor: 'black',
@@ -664,7 +664,7 @@ function showProvinces() {
         })
       }).addTo(map);
 
-      riverLabels.push(line, text);
+      riverLabels.push(line, text, circle);
     });
   }
 }
