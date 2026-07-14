@@ -94,11 +94,10 @@
     "Sindh": [
   "Mehar",
   "Dokri",
-  "Larkana",
-  "Sukkur",
   "Dadu",
-  "Nawabshah",
-  "Naushahro Feroze",
+  "Larkana",
+  "Kandiaro",
+  "Bakrani Taluks",
   "Mithi",
   "Chachro",
   "Nagar Parkar",
@@ -108,17 +107,31 @@
   "Sanghar"
 ],
 "Khyber Pakhtunkhwa": [
-  "Charsadda"
+  "Charsadda","Shabqadar","Tangi"
+
 ],
 "Balochistan": [
-  "Dera Bugti",
-  "Sibi",
   "Bhag",
+  "Balanari Sub",
   "Dhadar",
+  "Khattan Sub",
   "Mach Sub",
   "Sanni Sub",
-  "Gandakha",
-  "Jhat Pat"
+  "Bekerh",
+  "Dera Bughti",
+  "Loti",
+  "Malum",
+  "Phelawagh",
+  "Pir Koh",
+  "Sangsilla",
+  "Sui",
+  "Barkhan",
+  "Ghandakha",
+  "Jhat Pat",
+  "Kut Mandai",
+  "Lehri",
+  "Sangan",
+  "Sibi"
 ]
   }
 }
