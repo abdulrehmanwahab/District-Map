@@ -47,7 +47,6 @@
   "Fort Abbas",
   "Haroonabad",
   "Minchinabad",
-  "De-Excluded Area D.G.Khan",
   "Dera Ghazi Khan",
   "Chunian",
   "Kasur",
@@ -73,23 +72,11 @@
   "Darya Khan",
   "Kalur Kot",
   "Mankera",
-  "Dunya Pur",
-  "Karorpacca",
-  "Lodhran",
-  "Dina",
-  "Jhelum",
-  "Pind Dadan Khan",
-  "Sohawa",
-  "Attock",
-  "Fateh Jang",
-  "Hassanabdal",
-  "Hazro",
-  "Jand",
+   "Karorpacca",
+   "Pind Dadan Khan",
   "Pindi Gheb",
-  "Malakwal",
-  "Mandi Bahauddin",
-  "Phalia"
-  
+  "Mandi Bahauddin"
+   
 ],
     "Sindh": [
   "Mehar",
@@ -103,7 +90,7 @@
   "Nagar Parkar",
   "Diplo",
   "Sehwan",
-  "Umer kot",
+  "Umer kot"
   ],
 "Khyber Pakhtunkhwa": [
   "Charsadda","Shabqadar","Tangi"
@@ -112,7 +99,6 @@
 "Balochistan": [
   "Bhag",
   "Balanari Sub",
-  "Dhadar",
   "Sangsilla",
   "Dera Murad Jamali",
   "Jhat Pat",
